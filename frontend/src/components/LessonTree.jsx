@@ -3,7 +3,7 @@ import ReactFlow, { Controls, Background, useReactFlow, ReactFlowProvider } from
 
 // Recursively build nodes and edges from hierarchical JSON
 function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
-  // Add course node
+  // Add course node in the center
   const courseId = "root";
   nodes.push({
     id: courseId,
@@ -22,13 +22,17 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
     },
   });
 
-  // Add module nodes
-  const moduleY = y + 100;
-  const moduleXStart = x - ((courseData.modules.length - 1) * 200) / 2;
+  // Calculate positions for module nodes in a circle around the center
+  const moduleCount = courseData.modules.length;
+  const moduleRadius = 300; // Increased distance from center to modules
+  const angleStep = (2 * Math.PI) / moduleCount; // Angle between modules
   
   courseData.modules.forEach((module, i) => {
     const moduleId = `module-${i}`;
-    const moduleX = moduleXStart + i * 200;
+    // Calculate position using polar coordinates
+    const angle = i * angleStep;
+    const moduleX = x + moduleRadius * Math.cos(angle);
+    const moduleY = y + moduleRadius * Math.sin(angle);
     
     nodes.push({
       id: moduleId,
@@ -51,17 +55,23 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       id: `e-${courseId}-${moduleId}`,
       source: courseId,
       target: moduleId,
+      type: 'straight',
       style: { stroke: '#b3b3ff', strokeWidth: 2 },
       animated: false,
     });
 
-    // Add lesson nodes
-    const lessonY = moduleY + 100;
-    const lessonXStart = moduleX - ((module.lessons.length - 1) * 160) / 2;
+    // Calculate positions for lesson nodes in a semi-circle below each module
+    const lessonCount = module.lessons.length;
+    const lessonRadius = 200; // Distance from module to lessons
+    const lessonAngleStep = Math.PI / (lessonCount + 1); // Angle between lessons
+    const startAngle = angle - Math.PI / 2; // Start from the bottom of the module
     
     module.lessons.forEach((lesson, j) => {
       const lessonId = `lesson-${i}-${j}`;
-      const lessonX = lessonXStart + j * 160;
+      // Calculate position relative to the module
+      const lessonAngle = startAngle + (j + 1) * lessonAngleStep;
+      const lessonX = moduleX + lessonRadius * Math.cos(lessonAngle);
+      const lessonY = moduleY + lessonRadius * Math.sin(lessonAngle);
       
       nodes.push({
         id: lessonId,
@@ -84,6 +94,7 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
         id: `e-${moduleId}-${lessonId}`,
         source: moduleId,
         target: lessonId,
+        type: 'straight',
         style: { stroke: '#b3b3ff', strokeWidth: 2 },
         animated: false,
       });
