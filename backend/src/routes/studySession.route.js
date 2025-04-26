@@ -1,5 +1,5 @@
 import express from "express";
-import { processStudyFile, getStudySessionLesson } from "../controllers/studySession.controller.js";
+import { processStudyFile, getStudySessionLesson, getStudyMaterial } from "../controllers/studySession.controller.js";
 import { protectRoute } from "../middleware/auth.protectedroute.js";
 import multer from "multer";
 
@@ -25,6 +25,13 @@ router.get(
   "/:groupId/lesson",
   protectRoute,
   getStudySessionLesson
+);
+
+// New route for getting PDFs
+router.get(
+  "/material/:fileId",
+  protectRoute,
+  getStudyMaterial
 );
 
 export default router; 
