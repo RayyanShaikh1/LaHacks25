@@ -3,6 +3,7 @@ import { useChatStore } from "../store/useChatStore";
 import { Upload, Loader2, X } from "lucide-react";
 import { axiosInstance } from "../lib/axios";
 import LessonTree from "./LessonTree";
+import StudyChat from "./StudyChat";
 
 const StudySession = () => {
   const { isOverlayOpen, selectedGroup, toggleOverlay } = useChatStore();
@@ -10,6 +11,7 @@ const StudySession = () => {
   const [lessonPlan, setLessonPlan] = useState(null);
   const [error, setError] = useState(null);
   const [loadingLesson, setLoadingLesson] = useState(false);
+  const [activeChat, setActiveChat] = useState(null);
 
   // Fetch the lesson plan when the overlay opens or group changes
   useEffect(() => {
@@ -27,6 +29,7 @@ const StudySession = () => {
         }
       } else {
         setLessonPlan(null);
+        setActiveChat(null);
       }
     };
     fetchLesson();
@@ -72,51 +75,77 @@ const StudySession = () => {
     }
   };
 
+  const handleNodeClick = (node) => {
+    setActiveChat({
+      topic: node.data.label,
+      type: node.data.type
+    });
+  };
+
   return (
-    <div className="absolute inset-0 bg-neutral-800 z-10 flex flex-col border border-neutral-700 shadow-xl">
-      {/* Header */}
-      <div className="p-4 border-b border-neutral-700">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-neutral-200">Study Session</h2>
-          <button
-            onClick={toggleOverlay}
-            className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
-          >
-            <X size={18} />
-          </button>
+    <div className="absolute inset-0 bg-neutral-800 z-10 flex">
+      {/* Left panel - Lesson Tree */}
+      <div className="w-1/2 flex flex-col border-r border-neutral-700">
+        {/* Header */}
+        <div className="p-4 border-b border-neutral-700">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-neutral-200">Study Session</h2>
+            <button
+              onClick={toggleOverlay}
+              className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+        
+        {/* Content */}
+        <div className="p-4 flex-1">
+          {!lessonPlan ? (
+            <div className="mt-4">
+              <label className="flex items-center gap-2 p-3 rounded-lg bg-neutral-700/30 text-neutral-200 hover:bg-neutral-700/50 hover:text-white transition-colors cursor-pointer border border-neutral-600">
+                {isUploading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <Upload size={18} />
+                )}
+                <span>{isUploading ? "Processing..." : "Upload PDF"}</span>
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  accept=".pdf"
+                  multiple
+                  disabled={isUploading}
+                />
+              </label>
+              {error && (
+                <p className="mt-2 text-sm text-red-400">{error}</p>
+              )}
+            </div>
+          ) : (
+            <div className="mt-4">
+              <LessonTree 
+                lessonJson={lessonPlan} 
+                onNodeClick={handleNodeClick}
+              />
+            </div>
+          )}
         </div>
       </div>
-      
-      {/* Content */}
-      <div className="p-4 flex-1">
-        {!lessonPlan ? (
-          <div className="mt-4">
-            <label className="flex items-center gap-2 p-3 rounded-lg bg-neutral-700/30 text-neutral-200 hover:bg-neutral-700/50 hover:text-white transition-colors cursor-pointer border border-neutral-600">
-              {isUploading ? (
-                <Loader2 className="animate-spin" size={18} />
-              ) : (
-                <Upload size={18} />
-              )}
-              <span>{isUploading ? "Processing..." : "Upload PDF"}</span>
-              <input
-                type="file"
-                className="hidden"
-                onChange={handleFileUpload}
-                accept=".pdf"
-                multiple
-                disabled={isUploading}
-              />
-            </label>
-            {error && (
-              <p className="mt-2 text-sm text-red-400">{error}</p>
-            )}
-          </div>
-        ) : (
-          <div className="mt-4">
-            <LessonTree lessonJson={lessonPlan} />
-          </div>
-        )}
-      </div>
+
+      {/* Right panel - Study Chat */}
+      {activeChat ? (
+        <StudyChat 
+          topic={activeChat.topic}
+          groupId={selectedGroup?._id}
+          onClose={() => setActiveChat(null)}
+        />
+      ) : (
+        <div className="w-1/2 flex items-center justify-center text-neutral-400">
+          Select a topic to start studying
+        </div>
+      )}
 
       {/* Subtle glass highlights */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />

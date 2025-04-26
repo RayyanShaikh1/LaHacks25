@@ -3,6 +3,7 @@ import { GridFSBucket } from 'mongodb';
 import { processStudyMaterials } from "../lib/gemini.js";
 import Group from "../models/group.model.js";
 import User from "../models/user.model.js";
+import StudySessionChat from "../models/studySessionChat.model.js";
 
 // Initialize GridFS
 let gfs;
@@ -145,5 +146,52 @@ export const getStudyMaterial = async (req, res) => {
   } catch (error) {
     console.error("Error in getStudyMaterial:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Fetch chat history for a group/topic
+export const getStudyChatHistory = async (req, res) => {
+  try {
+    const { groupId, topic } = req.query;
+    const chat = await StudySessionChat.findOne({ groupId, topic });
+    res.json({ messages: chat ? chat.messages : [] });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch chat history" });
+  }
+};
+
+export const handleStudyChat = async (req, res) => {
+  try {
+    const { topic, message, history, groupId } = req.body;
+    const sender = req.user._id;
+
+    // Find or create chat
+    let chat = await StudySessionChat.findOne({ groupId, topic });
+    if (!chat) {
+      chat = new StudySessionChat({ groupId, topic, messages: [] });
+    }
+
+    // Add user message
+    chat.messages.push({
+      sender,
+      role: "user",
+      content: message,
+      timestamp: new Date()
+    });
+
+    // Generate assistant response (replace with Gemini logic)
+    const aiResponse = `You asked about "${topic}": ${message}`;
+    chat.messages.push({
+      sender: null,
+      role: "assistant",
+      content: aiResponse,
+      timestamp: new Date()
+    });
+
+    await chat.save();
+
+    res.json({ message: aiResponse });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to process study chat message" });
   }
 }; 
