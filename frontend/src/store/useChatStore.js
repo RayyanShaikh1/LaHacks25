@@ -12,6 +12,8 @@ export const useChatStore = create((set, get) => ({
   isUsersLoading: false,
   isMessagesLoading: false,
   isGroupsLoading: false,
+  isSidebarOpen: false,
+  isOverlayOpen: false,
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -264,6 +266,8 @@ export const useChatStore = create((set, get) => ({
   setSelectedUser: (selectedUser) => set({ selectedUser, selectedGroup: null }),
   setSelectedGroup: (selectedGroup) =>
     set({ selectedGroup, selectedUser: null }),
+  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  toggleOverlay: () => set((state) => ({ isOverlayOpen: !state.isOverlayOpen })),
 
   getGroupedMessages: () => {
     const { messages, selectedUser, selectedGroup } = get();

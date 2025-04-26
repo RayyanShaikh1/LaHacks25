@@ -7,13 +7,13 @@ import { Eye, EyeOff, Key, LogIn } from "lucide-react";
 // Animated background particles component
 const ParticleBackground = () => {
   useEffect(() => {
-    // Simple stars animation
     const canvas = document.getElementById("stars-canvas");
-    // Make sure we have a canvas element
     if (!(canvas instanceof HTMLCanvasElement)) return;
     
     const ctx = canvas.getContext("2d");
-    let particles = [];
+    let stars = [];
+    let shootingStars = [];
+    let lastShootingStarTime = 0;
     
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -23,39 +23,85 @@ const ParticleBackground = () => {
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
     
-    // Create particles
-    const createParticles = () => {
-      particles = [];
-      const particleCount = 100;
+    // Create stars
+    const createStars = () => {
+      stars = [];
+      const starCount = 200;
       
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
+      for (let i = 0; i < starCount; i++) {
+        stars.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
           radius: Math.random() * 1.5,
-          speed: 0.05 + Math.random() * 0.1,
-          opacity: 0.1 + Math.random() * 0.5,
+          opacity: 0.2 + Math.random() * 0.3,
+          twinkleSpeed: 0.02 + Math.random() * 0.03,
+          twinkleDirection: Math.random() > 0.5 ? 1 : -1,
         });
       }
+    };
+    
+    // Create a shooting star
+    const createShootingStar = () => {
+      const now = Date.now();
+      if (now - lastShootingStarTime < 3000) return;
+      
+      lastShootingStarTime = now;
+      shootingStars.push({
+        x: -10,
+        y: Math.random() * canvas.height,
+        length: 50 + Math.random() * 100,
+        speed: 8 + Math.random() * 4,
+        opacity: 1,
+        angle: Math.random() * Math.PI / 8 - Math.PI / 16,
+      });
     };
     
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      particles.forEach(p => {
-        p.y -= p.speed;
-        if (p.y < -5) p.y = canvas.height + 5;
+      // Update and draw stars
+      stars.forEach(star => {
+        // Twinkle effect
+        star.opacity += star.twinkleSpeed * star.twinkleDirection;
+        if (star.opacity > 0.5) star.twinkleDirection = -1;
+        if (star.opacity < 0.2) star.twinkleDirection = 1;
         
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
         ctx.fill();
       });
+      
+      // Update and draw shooting stars
+      shootingStars = shootingStars.filter(star => {
+        star.x += Math.cos(star.angle) * star.speed;
+        star.y += Math.sin(star.angle) * star.speed;
+        star.opacity -= 0.02;
+        
+        if (star.opacity <= 0 || star.x > canvas.width + 10) return false;
+        
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(
+          star.x - Math.cos(star.angle) * star.length,
+          star.y - Math.sin(star.angle) * star.length
+        );
+        ctx.strokeStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        return true;
+      });
+      
+      // Randomly create new shooting stars
+      if (Math.random() < 0.01) {
+        createShootingStar();
+      }
       
       requestAnimationFrame(animate);
     };
     
-    createParticles();
+    createStars();
     animate();
     
     return () => {
@@ -184,7 +230,7 @@ const LoginPage = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#c8c8ff] to-white"
+              className="text-4xl h-11 font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#c8c8ff] to-white"
             >
               Login
             </motion.h1>

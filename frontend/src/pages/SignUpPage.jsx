@@ -117,7 +117,7 @@ const FormField = ({ type, icon, placeholder, value, onChange, name }) => {
         {type === "password" && (
           <button
             type="button"
-            tabIndex="-1"
+            tabIndex={-1}
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[#c8c8ff] hover:text-white transition"
           >
@@ -170,7 +170,7 @@ const SignUpPage = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#c8c8ff] to-white"
+              className="text-4xl h-11 font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#c8c8ff] to-white"
             >
               Sign Up
             </motion.h1>

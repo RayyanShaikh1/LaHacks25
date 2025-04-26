@@ -1,1 +1,70 @@
 @import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Markdown content styles */
+.markdown-content {
+  @apply text-[#c8c8ff];
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  @apply text-white font-bold mt-4 first:mt-0;
+}
+
+.markdown-content h1 {
+  @apply text-2xl mb-4;
+}
+
+.markdown-content h2 {
+  @apply text-xl mb-3;
+}
+
+.markdown-content h3 {
+  @apply text-lg mb-2;
+}
+
+.markdown-content p {
+  @apply mb-4 last:mb-0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  @apply mb-4 pl-4;
+}
+
+.markdown-content ul {
+  @apply list-disc;
+}
+
+.markdown-content ol {
+  @apply list-decimal;
+}
+
+.markdown-content code {
+  @apply bg-[#070738]/50 px-1 py-0.5 rounded text-sm;
+}
+
+.markdown-content pre code {
+  @apply block p-4 rounded-lg my-2 overflow-x-auto;
+}
+
+.markdown-content blockquote {
+  @apply border-l-4 border-[#c8c8ff]/30 pl-4 my-4 italic;
+}
+
+.markdown-content a {
+  @apply text-blue-400 hover:text-blue-300 underline;
+}
+
+/* KaTeX math styles */
+.katex-display {
+  @apply my-4 overflow-x-auto;
+}
+
+.katex {
+  @apply text-white;
+}

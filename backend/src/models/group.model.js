@@ -27,6 +27,10 @@ const groupSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    studyAgentId: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

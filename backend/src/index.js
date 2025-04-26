@@ -9,6 +9,7 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import groupRoutes from "./routes/group.route.js";
+import studySessionRoutes from "./routes/studySession.route.js";
 import { app, server } from "./lib/socket.js";
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/group", groupRoutes);
+app.use("/api/study-session", studySessionRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
@@ -31,7 +33,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-server.listen(5001, () => {
+server.listen(PORT, () => {
   console.log("Server is running on PORT:" + PORT);
   connectDB();
 });

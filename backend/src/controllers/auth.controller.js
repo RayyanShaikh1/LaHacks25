@@ -90,26 +90,54 @@ export const logout = (req, res) => {
   }
 };
 
-//TODO: change update to include changing names and friendslist
 export const update = async (req, res) => {
   try {
-    const { profilePic } = req.body;
+    const { profilePic, biography, courses } = req.body;
     const userId = req.user._id;
 
-    if (!profilePic) {
-      return res.status(400).json({ message: "Profile pic is required" });
+    // Create updateData object only with fields that are actually being updated
+    const updateData = {};
+    
+    // Only add profilePic if it's provided and not empty
+    if (profilePic && profilePic.trim() !== '') {
+      updateData.profilePic = profilePic;
+    }
+    
+    // Only add biography if it's provided (even if empty string)
+    if (biography !== undefined) {
+      updateData.biography = biography;
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    // Handle courses update
+    if (courses !== undefined) {
+      updateData.courses = courses;
+    }
+
+    // If no valid fields to update, return error
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update" });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profilePic: uploadResponse.secure_url },
+      { $set: updateData },
       { new: true }
     );
 
-    res.status(200).json(updatedUser);
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      profilePic: updatedUser.profilePic,
+      biography: updatedUser.biography,
+      courses: updatedUser.courses,
+    });
   } catch (error) {
-    console.log("error in update profile:", error);
+    console.log("Error in update controller", error.message);
     res.status(500).json({ message: "Internal server error" });
   }
 };

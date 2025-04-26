@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Mail, Calendar, Shield, ArrowLeft, Upload } from "lucide-react";
+import { User, Mail, BookOpen, PenTool, ArrowLeft, Upload, Save, X, Plus, Trash2 } from "lucide-react";
 
 // Animated background particles component
 const ParticleBackground = () => {
@@ -66,13 +66,173 @@ const ParticleBackground = () => {
   return <canvas id="stars-canvas" className="absolute inset-0 z-0" />;
 };
 
-const ProfileInfoItem = ({ icon, label, value }) => {
+const CoursesEditor = ({ courses, onUpdate, isLoading }) => {
+  const [newCourse, setNewCourse] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleAddCourse = async () => {
+    if (newCourse.trim() !== '') {
+      const updatedCourses = [...courses, newCourse.trim()];
+      await onUpdate(updatedCourses);
+      setNewCourse('');
+    }
+  };
+
+  const handleRemoveCourse = async (index) => {
+    const updatedCourses = courses.filter((_, i) => i !== index);
+    await onUpdate(updatedCourses);
+  };
+
   return (
-    <div className="flex items-center gap-3 mb-4 bg-white/5 p-4 rounded-xl border border-white/10">
-      <div className="text-[#c8c8ff]">{icon}</div>
-      <div>
+    <div className="space-y-2">
+      <div className="flex gap-2 items-center">
+        <input
+          type="text"
+          value={newCourse}
+          onChange={(e) => setNewCourse(e.target.value)}
+          placeholder="Add a new course"
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white focus:outline-none focus:border-[#c8c8ff]"
+          disabled={isLoading}
+        />
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleAddCourse}
+          disabled={isLoading || !newCourse.trim()}
+          className="p-1 rounded-lg bg-[#070738] hover:bg-[#0a0a45] border border-white/10 disabled:opacity-50"
+        >
+          <Plus size={16} className="text-white" />
+        </motion.button>
+      </div>
+      
+      <div className="max-h-[200px] overflow-y-auto space-y-2 pr-2">
+        {courses.map((course, index) => (
+          <div
+            key={index}
+            className="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/10"
+          >
+            <span className="text-white break-words flex-1 min-w-0 pr-2">{course}</span>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleRemoveCourse(index)}
+              disabled={isLoading}
+              className="p-1 rounded-lg bg-[#070738] hover:bg-[#0a0a45] border border-white/10 flex-shrink-0"
+            >
+              <Trash2 size={16} className="text-white" />
+            </motion.button>
+          </div>
+        ))}
+        {courses.length === 0 && (
+          <div className="text-center text-[#c8c8ff]/70 py-2">
+            No courses added yet
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ProfileInfoItem = ({ icon, label, value, isEditable = false, onSave, isLoading }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedValue, setEditedValue] = useState(value);
+  const [error, setError] = useState('');
+  const textareaRef = useRef(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current && isEditing && label === 'Biography') {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+    }
+  }, [editedValue, isEditing, label]);
+
+  const handleSave = async () => {
+    if (isEditable) {
+      // For biography, allow empty strings
+      if (editedValue.trim() === '' && label === 'Biography') {
+        await onSave('');
+        setIsEditing(false);
+        setError('');
+      } else if (editedValue.trim() !== '') {
+        await onSave(editedValue);
+        setIsEditing(false);
+        setError('');
+      } else {
+        setError('Please enter a value');
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedValue(value);
+    setIsEditing(false);
+    setError('');
+  };
+
+  return (
+    <div className="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-xl border border-white/10">
+      <div className="text-[#c8c8ff] pt-1">{icon}</div>
+      <div className="flex-1 min-w-0">
         <div className="text-sm text-[#c8c8ff]/70">{label}</div>
-        <div className="text-white font-medium">{value}</div>
+        {isEditable && isEditing ? (
+          <div className="space-y-2">
+            <div className="flex flex-col gap-2">
+              {label === 'Biography' ? (
+                <textarea
+                  ref={textareaRef}
+                  value={editedValue}
+                  onChange={(e) => {
+                    setEditedValue(e.target.value);
+                    setError('');
+                  }}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#c8c8ff] resize-none overflow-y-auto"
+                  disabled={isLoading}
+                  rows={1}
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={editedValue}
+                  onChange={(e) => {
+                    setEditedValue(e.target.value);
+                    setError('');
+                  }}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white focus:outline-none focus:border-[#c8c8ff]"
+                  disabled={isLoading}
+                />
+              )}
+              <div className="flex gap-2 justify-end">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="p-1 rounded-lg bg-[#070738] hover:bg-[#0a0a45] border border-white/10"
+                >
+                  <Save size={16} className="text-white" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                  className="p-1 rounded-lg bg-[#070738] hover:bg-[#0a0a45] border border-white/10"
+                >
+                  <X size={16} className="text-white" />
+                </motion.button>
+              </div>
+            </div>
+            {error && <div className="text-red-400 text-sm">{error}</div>}
+          </div>
+        ) : (
+          <div 
+            className="text-white font-medium cursor-pointer hover:text-[#c8c8ff] transition-colors break-words whitespace-pre-wrap"
+            onClick={() => isEditable && setIsEditing(true)}
+          >
+            {value || (label === 'Biography' ? 'Tell us about yourself...' : value)}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -93,9 +253,17 @@ const ProfilePage = () => {
 
     reader.onload = async () => {
       const base64Image = reader.result;
-      setSelectedImg(base64Image); // Preview selected image
-      await updateProfile({ profilePic: base64Image }); // Update profile picture
+      setSelectedImg(base64Image);
+      await updateProfile({ profilePic: base64Image });
     };
+  };
+
+  const handleBiographySave = async (newBiography) => {
+    await updateProfile({ biography: newBiography });
+  };
+
+  const handleCoursesUpdate = async (newCourses) => {
+    await updateProfile({ courses: newCourses });
   };
 
   return (
@@ -175,25 +343,40 @@ const ProfilePage = () => {
                 <ProfileInfoItem 
                   icon={<User size={20} />} 
                   label="Name" 
-                  value={authUser?.name || "Not provided"} 
+                  value={authUser?.name || "Not provided"}
+                  isEditable={false}
+                  onSave={() => {}}
+                  isLoading={false}
                 />
                 
                 <ProfileInfoItem 
                   icon={<Mail size={20} />} 
                   label="Email" 
-                  value={authUser?.email} 
+                  value={authUser?.email}
+                  isEditable={false}
+                  onSave={() => {}}
+                  isLoading={false}
                 />
                 
-                <ProfileInfoItem 
-                  icon={<Calendar size={20} />} 
-                  label="Member Since" 
-                  value={authUser.createdAt?.split("T")[0] || "Not available"} 
-                />
+                <div className="flex items-center gap-3 mb-4 bg-white/5 p-4 rounded-xl border border-white/10">
+                  <div className="text-[#c8c8ff]"><BookOpen size={20} /></div>
+                  <div className="flex-1">
+                    <div className="text-sm text-[#c8c8ff]/70">Courses</div>
+                    <CoursesEditor 
+                      courses={authUser?.courses || []}
+                      onUpdate={handleCoursesUpdate}
+                      isLoading={isUpdatingProfile}
+                    />
+                  </div>
+                </div>
                 
                 <ProfileInfoItem 
-                  icon={<Shield size={20} />} 
-                  label="Account Status" 
-                  value="Active" 
+                  icon={<PenTool size={20} />} 
+                  label="Biography" 
+                  value={authUser?.biography || "Tell us about yourself..."}
+                  isEditable={true}
+                  onSave={handleBiographySave}
+                  isLoading={isUpdatingProfile}
                 />
               </div>
             </div>

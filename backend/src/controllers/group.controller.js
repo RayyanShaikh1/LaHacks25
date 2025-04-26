@@ -133,11 +133,12 @@ export const sendGroupMessage = async (req, res) => {
         const memberNames = members.map((m) => m.name);
 
         let aiResponse;
+        let promptParts = null;
 
         // Check if an image is included
         if (image) {
           // Create multimodal prompt parts for Gemini
-          const promptParts = [
+          promptParts = [
             {
               inlineData: {
                 mimeType: "image/jpeg",
@@ -150,33 +151,26 @@ export const sendGroupMessage = async (req, res) => {
                 : `Please briefly describe what you see in this image. Keep your response focused and concise.`,
             },
           ];
-
-          // Send initial context first if this is a new chat
-          if (!group.aiAgentId) {
-            await getGeminiResponse(null, group.aiAgentId, memberNames, null);
-          }
-
-          aiResponse = await getGeminiResponse(
-            null,
-            group.aiAgentId,
-            memberNames,
-            sender.name,
-            promptParts
-          );
-        } else {
-          // Regular text-only response
-          // Send initial context first if this is a new chat
-          if (!group.aiAgentId) {
-            await getGeminiResponse(null, group.aiAgentId, memberNames, null);
-          }
-
-          aiResponse = await getGeminiResponse(
-            question,
-            group.aiAgentId,
-            memberNames,
-            sender.name
-          );
         }
+
+        // Initialize chat with context if this is the first interaction
+        const isFirstInteraction = !(await Message.findOne({
+          groupId: group._id,
+          isAI: true,
+        }));
+
+        if (isFirstInteraction) {
+          await getGeminiResponse(null, group.aiAgentId, memberNames, null);
+        }
+
+        // Get AI response
+        aiResponse = await getGeminiResponse(
+          question,
+          group.aiAgentId,
+          memberNames,
+          sender.name,
+          promptParts
+        );
 
         const aiMessage = new Message({
           senderId: aiUser._id,
@@ -188,14 +182,11 @@ export const sendGroupMessage = async (req, res) => {
 
         await aiMessage.save();
 
-        // Wait a short delay to ensure message ordering
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
         // Emit AI response to all group members
         const aiMessageData = {
           ...aiMessage.toObject(),
-          senderName: "Nexus AI",
-          senderProfilePic: "https://www.gravatar.com/avatar/?d=mp",
+          senderName: aiUser.name,
+          senderProfilePic: aiUser.profilePic,
           groupId: group._id,
         };
 
@@ -207,12 +198,13 @@ export const sendGroupMessage = async (req, res) => {
         });
       } catch (error) {
         console.error("Error getting AI response:", error);
+        // Don't throw the error to prevent breaking the message flow
       }
     }
 
     res.status(201).json(newMessage);
   } catch (error) {
-    console.log("Error in sendGroupMessage: ", error.message);
+    console.error("Error in sendGroupMessage:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

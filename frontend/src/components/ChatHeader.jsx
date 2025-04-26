@@ -1,9 +1,9 @@
-import { X, Users, Hash } from "lucide-react";
+import { X, Users, Hash, Sidebar, Layout } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
 const ChatHeader = () => {
-  const { selectedUser, selectedGroup, setSelectedUser, setSelectedGroup } = useChatStore();
+  const { selectedUser, selectedGroup, setSelectedUser, setSelectedGroup, toggleSidebar, toggleOverlay } = useChatStore();
   const { onlineUsers } = useAuthStore();
 
   const handleClose = () => {
@@ -60,7 +60,25 @@ const ChatHeader = () => {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
+        {selectedGroup && (
+          <>
+            <button 
+              onClick={toggleSidebar}
+              className="p-2 rounded-full hover:bg-white/10 text-[#c8c8ff]/70 hover:text-white transition-colors"
+              title="Toggle Sidebar"
+            >
+              <Sidebar size={18} />
+            </button>
+            <button 
+              onClick={toggleOverlay}
+              className="p-2 rounded-full hover:bg-white/10 text-[#c8c8ff]/70 hover:text-white transition-colors"
+              title="Toggle Overlay"
+            >
+              <Layout size={18} />
+            </button>
+          </>
+        )}
         <button 
           onClick={handleClose}
           className="p-2 rounded-full hover:bg-white/10 text-[#c8c8ff]/70 hover:text-white transition-colors"

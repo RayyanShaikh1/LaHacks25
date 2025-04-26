@@ -20,6 +20,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "https://www.gravatar.com/avatar/?d=mp",
     },
+    biography: {
+      type: String,
+      default: "Tell us about yourself...",
+    },
+    courses: [{
+      type: String,
+      default: []
+    }],
     // friends: [
     //   {
     //     type: mongoose.Schema.Types.ObjectId,
