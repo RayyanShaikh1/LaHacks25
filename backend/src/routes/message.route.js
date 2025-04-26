@@ -4,6 +4,7 @@ import {
   getMessages,
   getUsersForSidebar,
   sendMessage,
+  deleteMessage,
 } from "../controllers/message.controller.js";
 
 const router = express.Router();
@@ -16,5 +17,8 @@ router.get("/:id", protectRoute, getMessages);
 
 //send messages to a specific chatter
 router.post("/send/:id", protectRoute, sendMessage);
+
+//delete a message
+router.delete("/:messageId", protectRoute, deleteMessage);
 
 export default router;
