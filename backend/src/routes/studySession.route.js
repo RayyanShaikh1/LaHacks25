@@ -1,5 +1,5 @@
 import express from "express";
-import { processStudyFile, getStudySessionLesson } from "../controllers/studySession.controller.js";
+import { processStudyFile, getStudySessionLesson, getStudyMaterial, handleStudyChat, getStudyChatHistory } from "../controllers/studySession.controller.js";
 import { protectRoute } from "../middleware/auth.protectedroute.js";
 import multer from "multer";
 
@@ -25,6 +25,27 @@ router.get(
   "/:groupId/lesson",
   protectRoute,
   getStudySessionLesson
+);
+
+// New route for getting PDFs
+router.get(
+  "/material/:fileId",
+  protectRoute,
+  getStudyMaterial
+);
+
+// New route for study chat
+router.post(
+  "/chat",
+  protectRoute,
+  handleStudyChat
+);
+
+// New route for fetching study chat history
+router.get(
+  "/chat/history",
+  protectRoute,
+  getStudyChatHistory
 );
 
 export default router; 

@@ -7,7 +7,10 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
   const courseId = "root";
   nodes.push({
     id: courseId,
-    data: { label: courseData.course },
+    data: { 
+      label: courseData.course,
+      type: "course"
+    },
     position: { x, y },
     style: {
       background: '#4747d1',
@@ -36,7 +39,10 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
     
     nodes.push({
       id: moduleId,
-      data: { label: module.module },
+      data: { 
+        label: module.module,
+        type: "module"
+      },
       position: { x: moduleX, y: moduleY },
       style: {
         background: '#23234a',
@@ -75,7 +81,10 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       
       nodes.push({
         id: lessonId,
-        data: { label: lesson },
+        data: { 
+          label: lesson,
+          type: "lesson"
+        },
         position: { x: lessonX, y: lessonY },
         style: {
           background: '#1a1a3a',
@@ -104,7 +113,7 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
   return { nodes, edges };
 }
 
-const LessonTreeInner = ({ lessonJson }) => {
+const LessonTreeInner = ({ lessonJson, onNodeClick }) => {
   const { nodes, edges } = useMemo(() => {
     if (!lessonJson || !lessonJson.course) return { nodes: [], edges: [] };
     return buildTreeNodesEdges(lessonJson, 0, 0);
@@ -124,12 +133,19 @@ const LessonTreeInner = ({ lessonJson }) => {
     fitView({ duration: 300, padding: 0.2 });
   }, [fitView]);
 
+  const handleNodeClick = (event, node) => {
+    if (onNodeClick) {
+      onNodeClick(node);
+    }
+  };
+
   return (
     <div className="w-full h-[600px] flex flex-col">
       <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          onNodeClick={handleNodeClick}
           fitView
           defaultZoom={0.8}
           minZoom={0.1}
@@ -167,10 +183,10 @@ const LessonTreeInner = ({ lessonJson }) => {
   );
 };
 
-const LessonTree = ({ lessonJson }) => {
+const LessonTree = ({ lessonJson, onNodeClick }) => {
   return (
     <ReactFlowProvider>
-      <LessonTreeInner lessonJson={lessonJson} />
+      <LessonTreeInner lessonJson={lessonJson} onNodeClick={onNodeClick} />
     </ReactFlowProvider>
   );
 };

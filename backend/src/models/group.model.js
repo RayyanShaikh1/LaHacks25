@@ -35,6 +35,29 @@ const groupSchema = new mongoose.Schema(
       type: Object,
       default: null,
     },
+    studyMaterials: [{
+      fileId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+      },
+      filename: {
+        type: String,
+        required: true
+      },
+      contentType: {
+        type: String,
+        required: true
+      },
+      uploadedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+      },
+      uploadDate: {
+        type: Date,
+        default: Date.now
+      }
+    }],
   },
   { timestamps: true }
 );
