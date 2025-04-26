@@ -85,7 +85,7 @@ const StudySession = () => {
   return (
     <div className="absolute inset-0 bg-neutral-800 z-10 flex">
       {/* Left panel - Lesson Tree */}
-      <div className="w-1/2 flex flex-col border-r border-neutral-700">
+      <div className={`${activeChat ? 'w-1/2' : 'w-1/2'} flex flex-col border-r border-neutral-700`}>
         {/* Header */}
         <div className="p-4 border-b border-neutral-700">
           <div className="flex items-center justify-between">
@@ -136,11 +136,13 @@ const StudySession = () => {
 
       {/* Right panel - Study Chat */}
       {activeChat ? (
-        <StudyChat 
-          topic={activeChat.topic}
-          groupId={selectedGroup?._id}
-          onClose={() => setActiveChat(null)}
-        />
+        <div className="flex-1">
+          <StudyChat 
+            topic={activeChat.topic}
+            groupId={selectedGroup?._id}
+            onClose={() => setActiveChat(null)}
+          />
+        </div>
       ) : (
         <div className="w-1/2 flex items-center justify-center text-neutral-400">
           Select a topic to start studying
