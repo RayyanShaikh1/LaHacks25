@@ -7,7 +7,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
-  const { authUser } = useAuthStore();
+  const { authUser, socket } = useAuthStore();
 
   // Fetch chat history on open
   useEffect(() => {
@@ -22,6 +22,22 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     if (groupId && topic) fetchHistory();
   }, [groupId, topic]);
 
+  // Real-time updates: join/leave room and listen for new messages
+  useEffect(() => {
+    if (socket && groupId && topic) {
+      socket.emit("joinStudyChat", { groupId, topic });
+      socket.on("newStudyChatMessages", (newMessages) => {
+        setMessages((prev) => [...prev, ...newMessages]);
+      });
+    }
+    return () => {
+      if (socket && groupId && topic) {
+        socket.emit("leaveStudyChat", { groupId, topic });
+        socket.off("newStudyChatMessages");
+      }
+    };
+  }, [socket, groupId, topic]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
@@ -31,22 +47,14 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     setIsLoading(true);
 
     try {
-      // Add user message immediately
-      setMessages(prev => [...prev, { role: "user", content: message }]);
-
-      // Send to backend
-      const response = await axiosInstance.post("/study-session/chat", {
+      // Do NOT optimistically add user or assistant messages
+      await axiosInstance.post("/study-session/chat", {
         topic,
         message,
         history: messages,
         groupId
       });
-
-      // Add assistant response
-      setMessages(prev => [...prev, { 
-        role: "assistant", 
-        content: response.data.message 
-      }]);
+      // (do not update messages here, let the socket event handle it)
     } catch (error) {
       console.error("Error sending message:", error);
       // Add error message
@@ -88,6 +96,13 @@ const StudyChat = ({ topic, groupId, onClose }) => {
                   : "bg-neutral-700 text-neutral-200"
               }`}
             >
+              {/* Show sender name if available and not assistant/system */}
+              {msg.role === "user" && msg.sender && msg.sender.name && (
+                <div className="text-xs font-semibold mb-1 text-blue-200">{msg.sender.name}</div>
+              )}
+              {msg.role === "assistant" && (
+                <div className="text-xs font-semibold mb-1 text-green-200">AI Assistant</div>
+              )}
               {msg.content}
             </div>
           </div>

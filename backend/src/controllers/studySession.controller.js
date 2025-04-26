@@ -4,6 +4,7 @@ import { processStudyMaterials } from "../lib/gemini.js";
 import Group from "../models/group.model.js";
 import User from "../models/user.model.js";
 import StudySessionChat from "../models/studySessionChat.model.js";
+import { io } from "../lib/socket.js";
 
 // Initialize GridFS
 let gfs;
@@ -153,7 +154,8 @@ export const getStudyMaterial = async (req, res) => {
 export const getStudyChatHistory = async (req, res) => {
   try {
     const { groupId, topic } = req.query;
-    const chat = await StudySessionChat.findOne({ groupId, topic });
+    const chat = await StudySessionChat.findOne({ groupId, topic })
+      .populate('messages.sender', 'name');
     res.json({ messages: chat ? chat.messages : [] });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch chat history" });
@@ -189,6 +191,20 @@ export const handleStudyChat = async (req, res) => {
     });
 
     await chat.save();
+
+    // Populate sender for the last two messages
+    const lastTwoMessages = chat.messages.slice(-2);
+    const populatedMessages = await Promise.all(
+      lastTwoMessages.map(async (msg) => {
+        if (msg.sender) {
+          const user = await User.findById(msg.sender).select("name");
+          return { ...msg.toObject(), sender: { name: user?.name || "" } };
+        }
+        return { ...msg.toObject() };
+      })
+    );
+
+    io.to(`studychat:${groupId}:${topic}`).emit("newStudyChatMessages", populatedMessages);
 
     res.json({ message: aiResponse });
   } catch (error) {
