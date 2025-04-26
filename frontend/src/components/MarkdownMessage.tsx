@@ -15,20 +15,20 @@ interface MarkdownMessageProps {
 
 const MarkdownMessage: React.FC<MarkdownMessageProps> = ({ content }) => {
   return (
-    <div className="markdown-content text-[#c8c8ff]">
+    <div className="markdown-content text-neutral-200">
       <ReactMarkdown
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
         components={{
           // Style headers
           h1: ({ ...props }) => (
-            <h1 className="text-2xl font-bold mb-4 text-white" {...props} />
+            <h1 className="text-2xl font-bold mb-4 text-neutral-200" {...props} />
           ),
           h2: ({ ...props }) => (
-            <h2 className="text-xl font-bold mb-3 text-white" {...props} />
+            <h2 className="text-xl font-bold mb-3 text-neutral-200" {...props} />
           ),
           h3: ({ ...props }) => (
-            <h3 className="text-lg font-bold mb-2 text-white" {...props} />
+            <h3 className="text-lg font-bold mb-2 text-neutral-200" {...props} />
           ),
 
           // Style code blocks and inline code
@@ -36,8 +36,8 @@ const MarkdownMessage: React.FC<MarkdownMessageProps> = ({ content }) => {
             <code
               className={`${
                 inline
-                  ? "bg-[#070738]/50 px-1 py-0.5 rounded text-sm"
-                  : "block bg-[#070738]/50 p-4 rounded-lg my-2 overflow-x-auto"
+                  ? "bg-neutral-700/50 px-1 py-0.5 rounded text-sm"
+                  : "block bg-neutral-700/50 p-4 rounded-lg my-2 overflow-x-auto"
               }`}
               {...props}
             />
@@ -64,7 +64,7 @@ const MarkdownMessage: React.FC<MarkdownMessageProps> = ({ content }) => {
           // Style blockquotes
           blockquote: ({ ...props }) => (
             <blockquote
-              className="border-l-4 border-[#c8c8ff]/30 pl-4 my-4 italic"
+              className="border-l-4 border-neutral-400/30 pl-4 my-4 italic"
               {...props}
             />
           ),

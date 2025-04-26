@@ -68,13 +68,13 @@ const ChatContainer = () => {
   const groupedMessages = getGroupedMessages();
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-gradient-to-br from-[#070738] to-[#0a0a45]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-neutral-850">
       <ChatHeader />
       <div className="flex-1 flex overflow-hidden relative">
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto space-y-4 py-4">
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-[#c8c8ff]/70">
+              <div className="flex flex-col items-center justify-center h-full text-neutral-400">
                 <p className="text-lg">No messages yet</p>
                 <p className="text-sm">Start the conversation!</p>
               </div>
@@ -85,12 +85,12 @@ const ChatContainer = () => {
                 return (
                   <div
                     key={group.messages[0]._id}
-                    className="hover:bg-[#0d0d50]/50 px-4 py-2"
+                    className="hover:bg-neutral-800/50 px-4 py-2"
                   >
                     {/* Discord-style layout with horizontal alignment of avatar, name and first message */}
                     <div className="flex items-start gap-3 w-full">
                       {/* Avatar */}
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mt-0.5 border border-white/20">
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mt-0.5 border border-neutral-600">
                         <img
                           src={group.sender.profilePic || "/avatar.png"}
                           alt="profile pic"
@@ -102,10 +102,10 @@ const ChatContainer = () => {
                       <div className="flex-1">
                         {/* Username and timestamp */}
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-white">
+                          <span className="font-medium text-neutral-200">
                             {group.sender.name}
                           </span>
-                          <span className="text-xs text-[#c8c8ff]/50">
+                          <span className="text-xs text-neutral-400">
                             {formatMessageTime(group.messages[0].createdAt)}
                           </span>
                         </div>
@@ -113,7 +113,7 @@ const ChatContainer = () => {
                         {/* First message */}
                         <div className="ml-0 relative">
                           {group.messages[0].image && (
-                            <div className="mb-1 max-w-lg rounded-md overflow-hidden border border-[#c8c8ff]/20">
+                            <div className="mb-1 max-w-lg rounded-md overflow-hidden border border-neutral-600">
                               <img
                                 src={group.messages[0].image}
                                 alt="Attachment"
@@ -128,7 +128,7 @@ const ChatContainer = () => {
                                   ? messageEndRef
                                   : null
                               }
-                              className="text-[#c8c8ff] group relative pr-8"
+                              className="text-neutral-200 group relative pr-8"
                             >
                               <MarkdownMessage content={group.messages[0].text} />
                               {group.isCurrentUser && (
@@ -166,7 +166,7 @@ const ChatContainer = () => {
                                     className="ml-0 group relative"
                                   >
                                     {message.image && (
-                                      <div className="mb-1 max-w-lg rounded-md overflow-hidden border border-[#c8c8ff]/20">
+                                      <div className="mb-1 max-w-lg rounded-md overflow-hidden border border-neutral-600">
                                         <img
                                           src={message.image}
                                           alt="Attachment"
@@ -175,7 +175,7 @@ const ChatContainer = () => {
                                       </div>
                                     )}
                                     {message.text && (
-                                      <div className="text-[#c8c8ff] pr-8">
+                                      <div className="text-neutral-200 pr-8">
                                         <MarkdownMessage content={message.text} />
                                         {group.isCurrentUser && (
                                           <button

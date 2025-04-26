@@ -4,15 +4,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(38 38 38); /* neutral-800 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(64 64 64); /* neutral-700 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(82 82 82); /* neutral-600 */
+}
+
+/* Firefox scrollbar styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(64 64 64) rgb(38 38 38); /* neutral-700 neutral-800 */
+}
+
 /* Markdown content styles */
 .markdown-content {
-  @apply text-[#c8c8ff];
+  @apply text-neutral-200;
 }
 
 .markdown-content h1,
 .markdown-content h2,
 .markdown-content h3 {
-  @apply text-white font-bold mt-4 first:mt-0;
+  @apply text-neutral-200 font-bold mt-4 first:mt-0;
 }
 
 .markdown-content h1 {
@@ -45,7 +70,7 @@
 }
 
 .markdown-content code {
-  @apply bg-[#070738]/50 px-1 py-0.5 rounded text-sm;
+  @apply bg-neutral-700/50 px-1 py-0.5 rounded text-sm;
 }
 
 .markdown-content pre code {
@@ -53,7 +78,7 @@
 }
 
 .markdown-content blockquote {
-  @apply border-l-4 border-[#c8c8ff]/30 pl-4 my-4 italic;
+  @apply border-l-4 border-neutral-400/30 pl-4 my-4 italic;
 }
 
 .markdown-content a {
@@ -66,5 +91,5 @@
 }
 
 .katex {
-  @apply text-white;
+  @apply text-neutral-200;
 }

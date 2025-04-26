@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { showError, showSuccess } from "../utils/errorHandler";
 import { useChatStore } from "../store/useChatStore";
 import { X, Users, Plus, Check } from "lucide-react";
-import toast from "react-hot-toast";
 
 const CreateGroupModal = ({ isOpen, onClose }) => {
   const [groupName, setGroupName] = useState("");
@@ -11,24 +11,23 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!groupName.trim()) {
-      toast.error("Please enter a group name");
+      showError("Please enter a group name");
       return;
     }
     if (selectedUsers.length < 2) {
-      toast.error("Please select at least 2 users");
+      showError("Please select at least 2 users");
       return;
     }
 
     try {
       await createGroup({
-        name: groupName.trim(),
+        name: groupName,
         members: selectedUsers,
       });
+      showSuccess("Group created successfully");
       onClose();
-      toast.success("Group created successfully");
     } catch (error) {
-      console.error("Failed to create group:", error);
-      toast.error("Failed to create group");
+      showError("Failed to create group");
     }
   };
 

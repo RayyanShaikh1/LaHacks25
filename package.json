@@ -21,6 +21,7 @@
   "homepage": "https://github.com/RayyanShaikh1/LaHacks25#readme",
   "dependencies": {
     "multer": "^1.4.5-lts.2",
+    "react-flow-renderer": "^10.3.17",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1"
   }

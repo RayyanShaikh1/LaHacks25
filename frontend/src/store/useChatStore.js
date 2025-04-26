@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import toast from "react-hot-toast";
+import { showError, showSuccess } from "../utils/errorHandler";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
 
@@ -14,6 +14,7 @@ export const useChatStore = create((set, get) => ({
   isGroupsLoading: false,
   isSidebarOpen: false,
   isOverlayOpen: false,
+  isSidebarCollapsed: false,
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -29,7 +30,7 @@ export const useChatStore = create((set, get) => ({
         return { users: filteredUsers };
       });
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
     } finally {
       set({ isUsersLoading: false });
     }
@@ -41,7 +42,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/group");
       set({ groups: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
     } finally {
       set({ isGroupsLoading: false });
     }
@@ -53,7 +54,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get(`/message/${userId}`);
       set({ messages: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
     } finally {
       set({ isMessagesLoading: false });
     }
@@ -65,7 +66,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get(`/group/${groupId}/messages`);
       set({ messages: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
     } finally {
       set({ isMessagesLoading: false });
     }
@@ -148,7 +149,7 @@ export const useChatStore = create((set, get) => ({
         }));
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
     }
   },
 
@@ -156,42 +157,31 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.post("/group/create", groupData);
       set((state) => ({ groups: [...state.groups, res.data] }));
-      toast.success("Group created successfully");
+      showSuccess("Group created successfully");
       return res.data;
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
+      throw error;
     }
   },
 
-  addGroupMembers: async (groupId, newMembers) => {
+  addGroupMembers: async (groupId, members) => {
     try {
-      const res = await axiosInstance.post(`/group/${groupId}/members/add`, {
-        newMembers,
-      });
-      set((state) => ({
-        groups: state.groups.map((group) =>
-          group._id === groupId ? res.data : group
-        ),
-      }));
-      toast.success("Members added successfully");
+      await axiosInstance.post(`/group/${groupId}/members`, { members });
+      showSuccess("Members added successfully");
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
+      throw error;
     }
   },
 
-  removeGroupMembers: async (groupId, membersToRemove) => {
+  removeGroupMembers: async (groupId, members) => {
     try {
-      const res = await axiosInstance.post(`/group/${groupId}/members/remove`, {
-        membersToRemove,
-      });
-      set((state) => ({
-        groups: state.groups.map((group) =>
-          group._id === groupId ? res.data : group
-        ),
-      }));
-      toast.success("Members removed successfully");
+      await axiosInstance.delete(`/group/${groupId}/members`, { data: { members } });
+      showSuccess("Members removed successfully");
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
+      throw error;
     }
   },
 
@@ -257,9 +247,10 @@ export const useChatStore = create((set, get) => ({
       set((state) => ({
         messages: state.messages.filter((msg) => msg._id !== messageId),
       }));
-      toast.success("Message deleted successfully");
+      showSuccess("Message deleted successfully");
     } catch (error) {
-      toast.error(error.response.data.message);
+      showError(error.response.data.message);
+      throw error;
     }
   },
 
@@ -268,6 +259,7 @@ export const useChatStore = create((set, get) => ({
     set({ selectedGroup, selectedUser: null }),
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   toggleOverlay: () => set((state) => ({ isOverlayOpen: !state.isOverlayOpen })),
+  toggleSidebarCollapse: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 
   getGroupedMessages: () => {
     const { messages, selectedUser, selectedGroup } = get();

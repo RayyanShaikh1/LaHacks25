@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { showError, showSuccess } from "../utils/errorHandler";
 import { useChatStore } from "../store/useChatStore";
 import { X, UserPlus } from "lucide-react";
-import toast from "react-hot-toast";
 
 const StartConversationModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
@@ -10,19 +10,16 @@ const StartConversationModal = ({ isOpen, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
-      toast.error("Please enter an email address");
+      showError("Please enter an email address");
       return;
     }
 
     try {
-      await startConversation(email.trim());
+      await startConversation(email);
+      showSuccess("Conversation started successfully");
       onClose();
-      toast.success("Conversation started successfully");
     } catch (error) {
-      console.error("Failed to start conversation:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to start conversation"
-      );
+      showError(error.response?.data?.message || "Failed to start conversation");
     }
   };
 

@@ -17,13 +17,13 @@ const ChatHeader = () => {
   if (!selectedUser && !selectedGroup) return null;
 
   return (
-    <div className="h-14 bg-gradient-to-r from-[#070738] to-[#0a0a45] border-b border-white/10 flex items-center justify-between px-4 shadow-md">
+    <div className="px-4 py-3 flex items-center justify-between border-b border-neutral-700">
       <div className="flex items-center gap-3">
         {/* Icon */}
-        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-white/20">
+        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-neutral-600">
           {selectedGroup && !selectedGroup.groupImage ? (
-            <div className="w-full h-full bg-gradient-to-br from-[#070738] to-[#110a5e] flex items-center justify-center">
-              <Hash size={16} className="text-white" />
+            <div className="w-full h-full bg-neutral-700 flex items-center justify-center">
+              <Hash size={16} className="text-neutral-200" />
             </div>
           ) : (
             <img
@@ -40,10 +40,10 @@ const ChatHeader = () => {
 
         {/* Name and Status */}
         <div>
-          <h3 className="font-medium text-white">
+          <h3 className="font-medium text-neutral-200">
             {selectedGroup ? selectedGroup.name : selectedUser.name}
           </h3>
-          <p className="text-xs text-[#c8c8ff]/70">
+          <p className="text-xs text-neutral-400">
             {selectedGroup ? (
               <span className="flex items-center gap-1">
                 <Users className="size-3" />
@@ -51,7 +51,7 @@ const ChatHeader = () => {
               </span>
             ) : (
               <span className="flex items-center gap-1">
-                <span className={`w-2 h-2 rounded-full ${onlineUsers.includes(selectedUser._id) ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                <span className={`w-2 h-2 rounded-full ${onlineUsers.includes(selectedUser._id) ? 'bg-green-500' : 'bg-neutral-500'}`}></span>
                 {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
               </span>
             )}
@@ -65,14 +65,14 @@ const ChatHeader = () => {
           <>
             <button 
               onClick={toggleSidebar}
-              className="p-2 rounded-full hover:bg-white/10 text-[#c8c8ff]/70 hover:text-white transition-colors"
+              className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
               title="Toggle Sidebar"
             >
               <Sidebar size={18} />
             </button>
             <button 
               onClick={toggleOverlay}
-              className="p-2 rounded-full hover:bg-white/10 text-[#c8c8ff]/70 hover:text-white transition-colors"
+              className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
               title="Toggle Overlay"
             >
               <Layout size={18} />
@@ -81,7 +81,7 @@ const ChatHeader = () => {
         )}
         <button 
           onClick={handleClose}
-          className="p-2 rounded-full hover:bg-white/10 text-[#c8c8ff]/70 hover:text-white transition-colors"
+          className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
         >
           <X size={18} />
         </button>

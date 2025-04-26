@@ -7,12 +7,12 @@ import ChatContainer from "../components/ChatContainer";
 
 function HomePage() {
   const { authUser } = useAuthStore();
-  const { selectedUser, selectedGroup } = useChatStore();
+  const { selectedUser, selectedGroup, isSidebarCollapsed } = useChatStore();
   
   return (
-    <div className="h-screen flex bg-[#36393f] text-white">
+    <div className="h-screen flex bg-neutral-900 text-neutral-200">
       <Sidebar />
-      <div className="flex-1 flex">
+      <div className={`flex-1 flex transition-all duration-300 ${isSidebarCollapsed ? 'ml-0' : 'ml-0'}`}>
         {!selectedUser && !selectedGroup ? <NoChatSelected /> : <ChatContainer />}
       </div>
     </div>

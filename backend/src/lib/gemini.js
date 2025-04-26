@@ -204,35 +204,56 @@ export const getGeminiResponse = async (
 };
 
 // Study session prompt template
-const studySessionPrompt = `You are an expert study assistant. Your task is to analyze the provided lecture transcript/notes and create a comprehensive study plan. Follow these guidelines:
+const studySessionPrompt = `You are an expert study assistant. Your task is to analyze the provided lecture transcript/notes and create a hierarchical lesson plan in JSON format.
 
-1. Analyze the content and identify:
-   - Key concepts and topics
-   - Important definitions and terms
-   - Main points and supporting details
-   - Potential areas that might need clarification
+Guidelines:
+1. The root node should be the general topic of the lesson (e.g., "Derivatives").
+2. Each subtopic should be a child node in a "subtopics" array, and can have its own subtopics recursively.
+3. Use this format:
+{
+  "topic": "Main Topic",
+  "subtopics": [
+    { "topic": "Subtopic 1", "subtopics": [ ... ] },
+    { "topic": "Subtopic 2", "subtopics": [ ... ] }
+  ]
+}
+4. Return only the JSON object, with no extra commentary or explanation.
 
-2. Create a structured lesson plan that includes:
-   - A clear overview of the material
-   - Organized sections with headings
-   - Key takeaways and summaries
-   - Suggested study questions
-   - Areas for further exploration
+Example:
+{
+  "topic": "Derivatives",
+  "subtopics": [
+    {
+      "topic": "Chain Rule",
+      "subtopics": [
+        { "topic": "Examples", "subtopics": [] },
+        { "topic": "Common Mistakes", "subtopics": [] }
+      ]
+    },
+    {
+      "topic": "Quotient Rule",
+      "subtopics": [
+        { "topic": "Formula", "subtopics": [] },
+        { "topic": "Applications", "subtopics": [] }
+      ]
+    },
+    {
+      "topic": "Product Rule",
+      "subtopics": []
+    }
+  ]
+}
+`;
 
-3. Format your response using Markdown with:
-   - Clear headings and subheadings
-   - Bullet points for key concepts
-   - Numbered lists for step-by-step explanations
-   - Code blocks for technical content
-   - Math expressions using LaTeX when needed
-
-4. Be prepared to:
-   - Answer questions about the material
-   - Provide additional explanations
-   - Suggest related topics for deeper understanding
-   - Help with problem-solving related to the content
-
-Remember to maintain a clear, academic tone while being accessible and engaging. Focus on making the material understandable and memorable.`;
+// Helper to extract JSON from a string
+function extractJsonFromString(str) {
+  const firstBrace = str.indexOf('{');
+  const lastBrace = str.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return str.substring(firstBrace, lastBrace + 1);
+  }
+  return null;
+}
 
 // Function to process study materials and generate a lesson plan
 export const processStudyMaterials = async (file, agentId, participants) => {
@@ -272,11 +293,29 @@ export const processStudyMaterials = async (file, agentId, participants) => {
 
     // Send the file to Gemini
     const response = await chat.sendMessage(fileParts);
-    const lessonPlan = response.response.text();
+    const lessonPlanRaw = response.response.text();
+
+    // Try to parse as JSON
+    let lessonPlan;
+    try {
+      lessonPlan = JSON.parse(lessonPlanRaw);
+    } catch (err) {
+      // Try to extract JSON substring
+      const jsonStr = extractJsonFromString(lessonPlanRaw);
+      if (jsonStr) {
+        try {
+          lessonPlan = JSON.parse(jsonStr);
+        } catch (err2) {
+          throw new Error("Gemini did not return valid JSON.");
+        }
+      } else {
+        throw new Error("Gemini did not return valid JSON.");
+      }
+    }
 
     // Add to conversation history
     conversation.addToHistory("user", fileParts);
-    conversation.addToHistory("model", [{ text: lessonPlan }]);
+    conversation.addToHistory("model", [{ text: lessonPlanRaw }]);
     await conversation.save();
 
     return lessonPlan;

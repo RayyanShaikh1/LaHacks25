@@ -31,6 +31,10 @@ const groupSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    studySessionLesson: {
+      type: Object,
+      default: null,
+    },
   },
   { timestamps: true }
 );
