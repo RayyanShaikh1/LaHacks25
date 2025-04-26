@@ -41,14 +41,25 @@ export const processStudyFile = async (req, res) => {
       if (!combinedLessonPlan) {
         combinedLessonPlan = lessonPlan;
       } else {
-        // Merge the lesson plans
-        combinedLessonPlan = {
-          topic: "Combined Study Materials",
-          subtopics: [
-            ...combinedLessonPlan.subtopics,
-            ...lessonPlan.subtopics
-          ]
-        };
+        // Merge the lesson plans by combining modules and their lessons
+        const existingModules = new Map();
+        
+        // First, create a map of existing modules
+        combinedLessonPlan.modules.forEach(module => {
+          existingModules.set(module.module, module);
+        });
+        
+        // Then, merge new modules and their lessons
+        lessonPlan.modules.forEach(newModule => {
+          if (existingModules.has(newModule.module)) {
+            // If module exists, merge lessons
+            const existingModule = existingModules.get(newModule.module);
+            existingModule.lessons = [...new Set([...existingModule.lessons, ...newModule.lessons])];
+          } else {
+            // If module doesn't exist, add it
+            combinedLessonPlan.modules.push(newModule);
+          }
+        });
       }
     }
 

@@ -88,7 +88,7 @@ const StudySession = () => {
       </div>
       
       {/* Content */}
-      <div className="p-4 flex-1 overflow-y-auto">
+      <div className="p-4 flex-1">
         {!lessonPlan ? (
           <div className="mt-4">
             <label className="flex items-center gap-2 p-3 rounded-lg bg-neutral-700/30 text-neutral-200 hover:bg-neutral-700/50 hover:text-white transition-colors cursor-pointer border border-neutral-600">

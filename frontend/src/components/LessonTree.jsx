@@ -1,73 +1,166 @@
-import React, { useMemo } from "react";
-import ReactFlow from "react-flow-renderer";
+import React, { useMemo, useCallback } from "react";
+import ReactFlow, { Controls, Background, useReactFlow, ReactFlowProvider } from "react-flow-renderer";
 
 // Recursively build nodes and edges from hierarchical JSON
-function buildTreeNodesEdges(node, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
-  const nodeId = parentId === null ? "root" : `${parentId}-${nodes.length}`;
+function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
+  // Add course node
+  const courseId = "root";
   nodes.push({
-    id: nodeId,
-    data: { label: node.topic },
+    id: courseId,
+    data: { label: courseData.course },
     position: { x, y },
     style: {
-      background: depth === 0 ? '#4747d1' : '#23234a',
+      background: '#4747d1',
       color: 'white',
       borderRadius: 6,
       padding: 6,
-      minWidth: depth === 0 ? 220 : 150,
+      minWidth: 220,
       textAlign: 'center',
-      fontWeight: depth === 0 ? 600 : 500,
-      fontSize: depth === 0 ? 18 : 14,
+      fontWeight: 600,
+      fontSize: 18,
       border: 'none',
     },
   });
-  if (parentId !== null) {
+
+  // Add module nodes
+  const moduleY = y + 100;
+  const moduleXStart = x - ((courseData.modules.length - 1) * 200) / 2;
+  
+  courseData.modules.forEach((module, i) => {
+    const moduleId = `module-${i}`;
+    const moduleX = moduleXStart + i * 200;
+    
+    nodes.push({
+      id: moduleId,
+      data: { label: module.module },
+      position: { x: moduleX, y: moduleY },
+      style: {
+        background: '#23234a',
+        color: 'white',
+        borderRadius: 6,
+        padding: 6,
+        minWidth: 180,
+        textAlign: 'center',
+        fontWeight: 500,
+        fontSize: 14,
+        border: 'none',
+      },
+    });
+
     edges.push({
-      id: `e-${parentId}-${nodeId}`,
-      source: parentId,
-      target: nodeId,
+      id: `e-${courseId}-${moduleId}`,
+      source: courseId,
+      target: moduleId,
       style: { stroke: '#b3b3ff', strokeWidth: 2 },
       animated: false,
     });
-  }
-  if (node.subtopics && node.subtopics.length > 0) {
-    const childYStart = y + 100;
-    const childXStart = x - ((node.subtopics.length - 1) * 120) / 2;
-    node.subtopics.forEach((sub, i) => {
-      buildTreeNodesEdges(
-        sub,
-        childXStart + i * 120,
-        childYStart,
-        nodeId,
-        nodes,
-        edges,
-        depth + 1
-      );
+
+    // Add lesson nodes
+    const lessonY = moduleY + 100;
+    const lessonXStart = moduleX - ((module.lessons.length - 1) * 160) / 2;
+    
+    module.lessons.forEach((lesson, j) => {
+      const lessonId = `lesson-${i}-${j}`;
+      const lessonX = lessonXStart + j * 160;
+      
+      nodes.push({
+        id: lessonId,
+        data: { label: lesson },
+        position: { x: lessonX, y: lessonY },
+        style: {
+          background: '#1a1a3a',
+          color: 'white',
+          borderRadius: 6,
+          padding: 6,
+          minWidth: 140,
+          textAlign: 'center',
+          fontWeight: 400,
+          fontSize: 12,
+          border: 'none',
+        },
+      });
+
+      edges.push({
+        id: `e-${moduleId}-${lessonId}`,
+        source: moduleId,
+        target: lessonId,
+        style: { stroke: '#b3b3ff', strokeWidth: 2 },
+        animated: false,
+      });
     });
-  }
+  });
+
   return { nodes, edges };
 }
 
-const LessonTree = ({ lessonJson }) => {
+const LessonTreeInner = ({ lessonJson }) => {
   const { nodes, edges } = useMemo(() => {
-    if (!lessonJson || !lessonJson.topic) return { nodes: [], edges: [] };
+    if (!lessonJson || !lessonJson.course) return { nodes: [], edges: [] };
     return buildTreeNodesEdges(lessonJson, 0, 0);
   }, [lessonJson]);
+
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+
+  const handleZoomIn = useCallback(() => {
+    zoomIn({ duration: 300 });
+  }, [zoomIn]);
+
+  const handleZoomOut = useCallback(() => {
+    zoomOut({ duration: 300 });
+  }, [zoomOut]);
+
+  const handleFitView = useCallback(() => {
+    fitView({ duration: 300, padding: 0.2 });
+  }, [fitView]);
+
   return (
-    <div style={{ width: '100%', height: 600 }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        fitView
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        panOnDrag={false}
-        zoomOnScroll={false}
-        zoomOnPinch={false}
-        zoomOnDoubleClick={false}
-        panOnScroll
-      />
+    <div className="w-full h-[600px] flex flex-col">
+      <div className="flex-1 relative">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          fitView
+          defaultZoom={0.8}
+          minZoom={0.1}
+          maxZoom={2}
+          attributionPosition="bottom-right"
+        >
+          <Background color="#404040" gap={16} />
+          <Controls />
+        </ReactFlow>
+      </div>
+      <div className="flex gap-1 bg-neutral-800/80 p-1 rounded-lg mt-2">
+        <button
+          onClick={handleZoomIn}
+          className="px-2 py-1 text-xs text-neutral-200 hover:bg-neutral-700 rounded transition-colors"
+          title="Zoom In"
+        >
+          +
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="px-2 py-1 text-xs text-neutral-200 hover:bg-neutral-700 rounded transition-colors"
+          title="Zoom Out"
+        >
+          -
+        </button>
+        <button
+          onClick={handleFitView}
+          className="px-2 py-1 text-xs text-neutral-200 hover:bg-neutral-700 rounded transition-colors"
+          title="Fit View"
+        >
+          Fit
+        </button>
+      </div>
     </div>
+  );
+};
+
+const LessonTree = ({ lessonJson }) => {
+  return (
+    <ReactFlowProvider>
+      <LessonTreeInner lessonJson={lessonJson} />
+    </ReactFlowProvider>
   );
 };
 

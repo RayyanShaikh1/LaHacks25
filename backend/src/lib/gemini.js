@@ -204,45 +204,34 @@ export const getGeminiResponse = async (
 };
 
 // Study session prompt template
-const studySessionPrompt = `You are an expert study assistant. Your task is to analyze the provided lecture transcript/notes and create a hierarchical lesson plan in JSON format.
+const studySessionPrompt = `You are an expert study assistant. Your task is to analyze multiple PDF uploads of lecture notes/transcripts and create a hierarchical course summary in JSON format.
 
 Guidelines:
-1. The root node should be the general topic of the lesson (e.g., "Derivatives").
-2. Each subtopic should be a child node in a "subtopics" array, and can have its own subtopics recursively.
-3. Use this format:
+1. The root node should be the course name.
+2. The second level should contain topics with their numbers (if applicable) and titles.
+3. The third level should contain specificlessons with their numbers and titles and should appear under their respective modules.
+4. The structure should be limited to these three levels only.
+5. Use this format:
 {
-  "topic": "Main Topic",
-  "subtopics": [
-    { "topic": "Subtopic 1", "subtopics": [ ... ] },
-    { "topic": "Subtopic 2", "subtopics": [ ... ] }
-  ]
-}
-4. Return only the JSON object, with no extra commentary or explanation.
-
-Example:
-{
-  "topic": "Derivatives",
-  "subtopics": [
+  "course": "Course Name",
+  "modules": [
     {
-      "topic": "Chain Rule",
-      "subtopics": [
-        { "topic": "Examples", "subtopics": [] },
-        { "topic": "Common Mistakes", "subtopics": [] }
+      "module": "Topic 1: Title",
+      "lessons": [
+        "Lesson 1: Lesson Title",
+        "Lesson 2: Lesson Title"
       ]
     },
     {
-      "topic": "Quotient Rule",
-      "subtopics": [
-        { "topic": "Formula", "subtopics": [] },
-        { "topic": "Applications", "subtopics": [] }
+      "module": "Topic 2: Title",
+      "lessons": [
+        "Lesson 1: Lesson Title",
+        "Lesson 2: Lesson Title"
       ]
-    },
-    {
-      "topic": "Product Rule",
-      "subtopics": []
     }
   ]
 }
+6. Return only the JSON object, with no extra commentary or explanation.
 `;
 
 // Helper to extract JSON from a string

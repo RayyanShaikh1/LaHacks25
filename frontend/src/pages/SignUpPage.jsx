@@ -131,68 +131,42 @@ const FormField = ({ type, icon, placeholder, value, onChange, name }) => {
 
 // Main signup page component
 const SignUpPage = () => {
-  // Local state to store form input values
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  // Access signup function and loading state from auth store
   const { signup, isSigningUp } = useAuthStore();
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    signup(formData); // Call the signup function with form data
+    signup(formData);
   };
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#070738] via-[#090952] to-[#0a0a45] z-0" />
-      
-      {/* Animated stars */}
-      <ParticleBackground />
-      
+    <div className="min-h-screen flex items-center justify-center bg-neutral-900">
+      <div className="w-full max-w-md px-4">
+        <div className="relative backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-xl overflow-hidden w-full">
       {/* Content */}
-      <div className="relative z-10 w-full max-w-md px-4">
-        <GlassCard>
+          <div className="p-8">
           {/* Header */}
           <div className="mb-6 text-center">
-            <motion.h1 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl h-11 font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#c8c8ff] to-white"
-            >
+              <h1 className="text-4xl h-11 font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#c8c8ff] to-white">
               Sign Up
-            </motion.h1>
-            
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-[#c8c8ff] mt-2"
-            >
+              </h1>
+              <p className="text-neutral-400 mt-2">
               Create your account to get started
-            </motion.p>
+              </p>
           </div>
           
           {/* Signup form */}
-          <motion.form 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            onSubmit={handleSubmit}
-            className="space-y-4"
-          >
+            <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name field */}
             <FormField 
               type="text"
@@ -224,12 +198,10 @@ const SignUpPage = () => {
             />
             
             {/* Submit button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              <button
               disabled={isSigningUp}
               type="submit"
-              className="w-full py-4 mt-2 bg-gradient-to-r from-[#070738] to-[#110a5e] hover:from-[#0a0a45] hover:to-[#150c70] rounded-xl text-white font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-70"
+                className="w-full py-4 mt-2 bg-neutral-800 hover:bg-neutral-700 rounded-xl text-white font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-70"
             >
               {isSigningUp ? (
                 <>
@@ -245,24 +217,20 @@ const SignUpPage = () => {
                   <span>Create Account</span>
                 </>
               )}
-            </motion.button>
-          </motion.form>
+              </button>
+            </form>
           
           {/* Sign in link */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-8 text-center"
-          >
-            <p className="text-[#c8c8ff]">
+            <div className="mt-8 text-center">
+              <p className="text-neutral-400">
               Already have an account?{" "}
-              <Link to="/login" className="text-white hover:text-[#a0a0ff] font-medium transition-colors">
+                <Link to="/login" className="text-[#c8c8ff] hover:text-[#a0a0ff] font-medium transition-colors">
                 Sign in
               </Link>
             </p>
-          </motion.div>
-        </GlassCard>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
