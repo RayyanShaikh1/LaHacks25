@@ -16,8 +16,16 @@ export const useChatStore = create((set, get) => ({
   getUsers: async () => {
     set({ isUsersLoading: true });
     try {
-      const res = await axiosInstance.get("/message/users");
-      set({ users: res.data });
+      const res = await axiosInstance.get("/message/conversations");
+      // Filter out Nexus AI from both new and existing conversations
+      const filteredUsers = res.data.filter((user) => user._id !== "nexusai");
+      set((state) => {
+        // Also filter out any existing Nexus AI conversations in the state
+        const existingUsers = state.users.filter(
+          (user) => user._id !== "nexusai"
+        );
+        return { users: filteredUsers };
+      });
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
@@ -67,25 +75,75 @@ export const useChatStore = create((set, get) => ({
     try {
       let res;
       if (selectedGroup) {
-        res = await axiosInstance.post(`/group/${selectedGroup._id}/messages`, {
+        // First add the user's message to the state
+        const userMessage = {
           ...messageData,
-          groupId: selectedGroup._id,
-        });
-        const enrichedMessage = {
-          ...res.data,
           senderId: {
             _id: authUser._id,
             name: authUser.name,
             profilePic: authUser.profilePic,
           },
+          senderName: authUser.name,
+          senderProfilePic: authUser.profilePic,
+          groupId: selectedGroup._id,
+          createdAt: new Date(),
+          isAI: false,
         };
-        set({ messages: [...messages, enrichedMessage] });
+        set((state) => ({
+          messages: [...state.messages, userMessage],
+        }));
+
+        // Then send the message to the server
+        res = await axiosInstance.post(`/group/${selectedGroup._id}/messages`, {
+          ...messageData,
+          groupId: selectedGroup._id,
+        });
+
+        // Update the message with the server response data
+        set((state) => ({
+          messages: state.messages.map((msg) =>
+            msg.senderId._id === authUser._id && !msg._id
+              ? {
+                  ...msg,
+                  ...res.data,
+                  senderId: {
+                    _id: authUser._id,
+                    name: authUser.name,
+                    profilePic: authUser.profilePic,
+                  },
+                  senderName: authUser.name,
+                  senderProfilePic: authUser.profilePic,
+                }
+              : msg
+          ),
+        }));
       } else {
+        // First add the user's message to the state
+        const userMessage = {
+          ...messageData,
+          senderId: authUser._id,
+          receiverId: selectedUser._id,
+          createdAt: new Date(),
+          isAI: false,
+        };
+        set((state) => ({
+          messages: [...state.messages, userMessage],
+        }));
+
+        // Then send the message to the server
         res = await axiosInstance.post(
           `/message/send/${selectedUser._id}`,
           messageData
         );
-        set({ messages: [...messages, res.data] });
+
+        // Update the message with the server response data
+        set((state) => ({
+          messages: state.messages.map((msg) =>
+            msg.senderId === authUser._id && !msg._id
+              ? { ...msg, ...res.data }
+              : msg
+          ),
+        }));
       }
     } catch (error) {
       toast.error(error.response.data.message);
@@ -142,10 +200,28 @@ export const useChatStore = create((set, get) => ({
     const socket = useAuthStore.getState().socket;
 
     socket.on("newMessage", (newMessage) => {
-      if (selectedUser && newMessage.senderId === selectedUser._id) {
-        set({
-          messages: [...get().messages, newMessage],
-        });
+      if (selectedUser) {
+        // Handle both direct messages and AI responses
+        const isAIMessage =
+          newMessage.senderId === "nexusai" || newMessage.isAI;
+        const isRelevantMessage =
+          (newMessage.senderId === selectedUser._id ||
+            newMessage.receiverId === selectedUser._id ||
+            isAIMessage) &&
+          (newMessage.senderId === selectedUser._id ||
+            newMessage.receiverId === selectedUser._id ||
+            selectedUser._id === "nexusai" ||
+            newMessage.receiverId === useAuthStore.getState().authUser._id);
+
+        if (isRelevantMessage) {
+          const enrichedMessage = {
+            ...newMessage,
+            isAI: isAIMessage,
+          };
+          set((state) => ({
+            messages: [...state.messages, enrichedMessage],
+          }));
+        }
       }
     });
 
@@ -159,9 +235,9 @@ export const useChatStore = create((set, get) => ({
             profilePic: newMessage.senderProfilePic,
           },
         };
-        set({
-          messages: [...get().messages, messageWithSender],
-        });
+        set((state) => ({
+          messages: [...state.messages, messageWithSender],
+        }));
       }
     });
   },
@@ -196,6 +272,13 @@ export const useChatStore = create((set, get) => ({
     if (!messages.length) return [];
 
     const getMessageSender = (message) => {
+      if (message.isAI) {
+        return {
+          _id: "nexusai",
+          name: "Nexus AI",
+          profilePic: "https://www.gravatar.com/avatar/?d=mp",
+        };
+      }
       if (selectedGroup) {
         return message.senderId;
       }
@@ -244,5 +327,35 @@ export const useChatStore = create((set, get) => ({
     });
 
     return groupedMessages;
+  },
+
+  startConversation: async (email) => {
+    try {
+      const res = await axiosInstance.post("/message/start-conversation", {
+        email,
+      });
+      return res.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  subscribeToConversations: () => {
+    const socket = useAuthStore.getState().socket;
+
+    socket.on("newConversation", ({ user, message }) => {
+      set((state) => {
+        // Check if user already exists in conversations and is not Nexus AI
+        const userExists = state.users.some((u) => u._id === user._id);
+        if (!userExists && user._id !== "nexusai") {
+          return { users: [...state.users, user] };
+        }
+        return state;
+      });
+    });
+
+    return () => {
+      socket.off("newConversation");
+    };
   },
 }));

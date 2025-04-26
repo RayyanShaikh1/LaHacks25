@@ -26,15 +26,43 @@ const messageSchema = new mongoose.Schema(
       enum: ["direct", "group"],
       required: true,
     },
+    isAI: {
+      type: Boolean,
+      default: false,
+    },
+    conversationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Conversation",
+    },
   },
   { timestamps: true }
 );
 
 // Ensure either receiverId or groupId is present, but not both
-messageSchema.pre("save", function(next) {
-  if ((!this.receiverId && !this.groupId) || (this.receiverId && this.groupId)) {
-    next(new Error("Message must have either receiverId or groupId, but not both"));
+messageSchema.pre("save", function (next) {
+  // Validate message type matches the presence of receiverId/groupId
+  if (this.messageType === "direct" && !this.receiverId) {
+    next(new Error("Direct messages must have a receiverId"));
   }
+  if (this.messageType === "group" && !this.groupId) {
+    next(new Error("Group messages must have a groupId"));
+  }
+
+  // Ensure either text or image is present
+  if (!this.text && !this.image) {
+    next(new Error("Message must have either text or image"));
+  }
+
+  // Ensure either receiverId or groupId is present, but not both
+  if (
+    (!this.receiverId && !this.groupId) ||
+    (this.receiverId && this.groupId)
+  ) {
+    next(
+      new Error("Message must have either receiverId or groupId, but not both")
+    );
+  }
+
   next();
 });
 
