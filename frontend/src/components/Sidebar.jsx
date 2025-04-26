@@ -78,7 +78,7 @@ const Sidebar = () => {
         >
           {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
-        <h1 className={`text-lg font-semibold text-neutral-200 ${isSidebarCollapsed ? 'hidden' : 'block'}`}>Nexus</h1>
+        <h1 className={`text-lg font-semibold text-neutral-200 ${isSidebarCollapsed ? 'hidden' : 'block'}`}>nexus</h1>
       </div>
 
       {/* Tabs */}

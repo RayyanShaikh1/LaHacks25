@@ -22,7 +22,7 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "LaHacks25": "file:..",
+    "prototype": "file:..",
     "mongoose": "^8.13.2",
     "multer": "^1.4.5-lts.2",
     "pdf-lib": "^1.17.1",

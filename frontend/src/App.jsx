@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Routes, Route, Navigate } from "react-router-dom";
-
+import WelcomePage from "./pages/WelcomePage";
 import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
@@ -33,8 +33,12 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route
+      <Route
           path="/"
+          element={authUser ? <Navigate to="/home" /> : <WelcomePage />}
+        />
+        <Route
+          path="/home"
           element={authUser ? <HomePage /> : <Navigate to="/login" />}
         />
         <Route
