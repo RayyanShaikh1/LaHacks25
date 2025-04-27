@@ -314,14 +314,14 @@ export const initializeStudySessionAgent = async (req, res) => {
       chat.aiContext = aiContext;
     }
 
-    // Add a temporary message to indicate initialization is in progress
-    chat.messages.push({
-      sender: null,
-      role: "assistant",
-      content: "# Initializing study materials...",
-      timestamp: new Date()
-    });
-    await chat.save();
+    // // Add a temporary message to indicate initialization is in progress
+    // chat.messages.push({
+    //   sender: null,
+    //   role: "assistant",
+    //   content: "# Initializing study materials...",
+    //   timestamp: new Date()
+    // });
+    // await chat.save();
 
     // Fetch PDF buffers for the group
     const pdfBuffers = await getPdfBuffersForGroup(group);

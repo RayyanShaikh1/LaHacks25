@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
-import { X, BookOpen, Eye, Loader2 } from "lucide-react";
+import { X, BookOpen, Eye, Loader2, AlertCircle } from "lucide-react";
 import MarkdownMessage from "./MarkdownMessage";
 import QuizModal from "./QuizModal";
 
@@ -18,6 +18,29 @@ const StudyChat = ({ topic, groupId, onClose }) => {
   const [isSending, setIsSending] = useState(false);
   const [isNexusThinking, setIsNexusThinking] = useState(false);
   const [lastMessageWasForNexus, setLastMessageWasForNexus] = useState(false);
+  const [error, setError] = useState(null);
+  const errorTimeoutRef = useRef(null);
+
+  // Clear error after a short time
+  useEffect(() => {
+    if (error) {
+      // Clear any existing timeout
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+      
+      // Set a new timeout to clear the error after 3 seconds
+      errorTimeoutRef.current = setTimeout(() => {
+        setError(null);
+      }, 3000);
+    }
+    
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+    };
+  }, [error]);
 
   // Scroll to bottom helper function
   const scrollToBottom = (behavior = 'smooth') => {
@@ -186,11 +209,8 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       console.error("Error sending message:", error);
       // Remove the temporary message if there was an error
       setMessages(prev => prev.filter(msg => msg._id !== tempMessage._id));
-      // Add error message
-      setMessages(prev => [...prev, { 
-        role: "system", 
-        content: "Sorry, there was an error processing your message." 
-      }]);
+      // Set error message instead of adding to chat
+      setError("Sorry, there was an error processing your message.");
     } finally {
       setIsSending(false);
       // We'll set isNexusThinking to false when we receive the response via socket
@@ -322,6 +342,22 @@ const StudyChat = ({ topic, groupId, onClose }) => {
           </button>
         </div>
       </div>
+      
+      {/* Error Message */}
+      {error && (
+        <div 
+          className="bg-red-900/80 text-white px-4 py-2 flex items-center justify-between cursor-pointer"
+          onClick={() => setError(null)}
+        >
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} />
+            <span>{error}</span>
+          </div>
+          <button onClick={() => setError(null)}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
       
       {/* Messages */}
       <div 
