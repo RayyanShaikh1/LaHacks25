@@ -175,7 +175,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-neutral-700 text-neutral-200 rounded-lg p-3">
-              Thinking...
+              Loading notes...
             </div>
           </div>
         )}
