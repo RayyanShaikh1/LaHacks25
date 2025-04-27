@@ -1,6 +1,6 @@
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -21,6 +21,7 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
     deleteMessage,
     getGroupedMessages,
+    isMessagesLoading
   } = useChatStore();
 
   const { authUser, socket } = useAuthStore();
@@ -73,7 +74,14 @@ const ChatContainer = () => {
       <div className="flex-1 flex overflow-hidden relative">
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto space-y-4 py-4">
-            {messages.length === 0 ? (
+            {isMessagesLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="flex flex-col items-center gap-2 text-neutral-400">
+                  <Loader2 className="animate-spin" size={24} />
+                  <p>Loading messages...</p>
+                </div>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-neutral-400">
                 <p className="text-lg">No messages yet</p>
                 <p className="text-sm">Start the conversation!</p>

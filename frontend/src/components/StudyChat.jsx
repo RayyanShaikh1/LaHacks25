@@ -1,18 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
-import { X, BookOpen, Eye } from "lucide-react";
+import { X, BookOpen, Eye, Loader2 } from "lucide-react";
 import MarkdownMessage from "./MarkdownMessage";
 import QuizModal from "./QuizModal";
 
 const StudyChat = ({ topic, groupId, onClose }) => {
   const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [inputMessage, setInputMessage] = useState("");
   const [quiz, setQuiz] = useState(null);
   const [showQuiz, setShowQuiz] = useState(false);
   const [reviewAnswers, setReviewAnswers] = useState(null);
   const { authUser, socket } = useAuthStore();
+  const messagesEndRef = useRef(null);
+
+  // Reset state when topic or groupId changes
+  useEffect(() => {
+    setMessages([]);
+    setQuiz(null);
+    setIsLoading(true);
+  }, [topic, groupId]);
 
   // Fetch chat history on open, or initialize Gemini agent if no messages
   useEffect(() => {
@@ -25,13 +33,43 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         } else {
           // No messages, initialize Gemini agent and get lesson
           setIsLoading(true);
-          const initRes = await axiosInstance.post(`/study-session/chat/init`, { groupId, topic });
-          setMessages(initRes.data.messages);
-          setQuiz(initRes.data.quiz);
-          setIsLoading(false);
+          let retries = 0;
+          const maxRetries = 5;
+          while (retries < maxRetries) {
+            try {
+              const initRes = await axiosInstance.post(`/study-session/chat/init`, { groupId, topic });
+              if (initRes.data.alreadyInitialized) {
+                setMessages(initRes.data.messages);
+                setQuiz(initRes.data.quiz);
+                break;
+              } else {
+                setMessages(initRes.data.messages);
+                setQuiz(initRes.data.quiz);
+                break;
+              }
+            } catch (error) {
+              if (error.response?.status === 409) {
+                // Chat initialization in progress, wait and retry
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                retries++;
+                if (retries === maxRetries) {
+                  setMessages([{ 
+                    role: "system", 
+                    content: "Failed to initialize chat after multiple attempts. Please try again." 
+                  }]);
+                }
+              } else {
+                throw error;
+              }
+            }
+          }
         }
       } catch (error) {
-        setMessages([]);
+        setMessages([{ 
+          role: "system", 
+          content: "Sorry, there was an error loading the chat." 
+        }]);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -53,6 +91,11 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       }
     };
   }, [socket, groupId, topic]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Determine if the current user has completed the quiz
   const userQuizResponse = quiz?.responses?.find(
@@ -146,38 +189,43 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, i) => (
-          <div 
-            key={i} 
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div 
-              className={`max-w-[80%] rounded-lg p-3 ${
-                msg.role === "user" 
-                  ? "bg-blue-600 text-white" 
-                  : msg.role === "system"
-                  ? "bg-red-600 text-white"
-                  : "bg-neutral-700 text-neutral-200"
-              }`}
-            >
-              {/* Show sender name if available and not assistant/system */}
-              {msg.role === "user" && msg.sender && msg.sender.name && (
-                <div className="text-xs font-semibold mb-1 text-blue-200">{msg.sender.name}</div>
-              )}
-              {msg.role === "assistant" && (
-                <div className="text-xs font-semibold mb-1 text-green-200">AI Assistant</div>
-              )}
-              {/* Render markdown for all messages */}
-              <MarkdownMessage content={msg.content} />
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-2 text-neutral-400">
+              <Loader2 className="animate-spin" size={24} />
+              <p>Loading chat...</p>
             </div>
           </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-neutral-700 text-neutral-200 rounded-lg p-3">
-              Loading notes...
-            </div>
-          </div>
+        ) : (
+          <>
+            {messages.map((msg, i) => (
+              <div 
+                key={i} 
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div 
+                  className={`max-w-[80%] rounded-lg p-3 ${
+                    msg.role === "user" 
+                      ? "bg-blue-600 text-white" 
+                      : msg.role === "system"
+                      ? "bg-red-600 text-white"
+                      : "bg-neutral-700 text-neutral-200"
+                  }`}
+                >
+                  {/* Show sender name if available and not assistant/system */}
+                  {msg.role === "user" && msg.sender && msg.sender.name && (
+                    <div className="text-xs font-semibold mb-1 text-blue-200">{msg.sender.name}</div>
+                  )}
+                  {msg.role === "assistant" && (
+                    <div className="text-xs font-semibold mb-1 text-green-200">AI Assistant</div>
+                  )}
+                  {/* Render markdown for all messages */}
+                  <MarkdownMessage content={msg.content} />
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </>
         )}
       </div>
       

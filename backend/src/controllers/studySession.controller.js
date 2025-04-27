@@ -277,6 +277,35 @@ export const initializeStudySessionAgent = async (req, res) => {
       return res.status(200).json({ alreadyInitialized: true, messages: chat.messages });
     }
 
+    // Create a lock for this chat initialization
+    const lockKey = `chat_init_${groupId}_${topic}`;
+    const isLocked = await StudySessionChat.findOne({ 
+      groupId, 
+      topic,
+      'messages.0': { $exists: true },
+      'messages.0.role': 'assistant',
+      'messages.0.content': { $regex: '^# ' } // Check if first message is a heading (notes)
+    });
+
+    if (isLocked) {
+      // If chat is being initialized, wait and retry a few times
+      let retries = 0;
+      const maxRetries = 5;
+      while (retries < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        const updatedChat = await StudySessionChat.findOne({ groupId, topic });
+        if (updatedChat && updatedChat.messages.length > 0) {
+          return res.status(200).json({ 
+            alreadyInitialized: true, 
+            messages: updatedChat.messages,
+            quiz: updatedChat.quiz 
+          });
+        }
+        retries++;
+      }
+      return res.status(409).json({ error: "Chat initialization in progress" });
+    }
+
     // Create or update chat with AI context
     const aiContext = `You are a specialized AI agent to teach the following students: ${memberNames.join(", ")} about ${topic}. Your role is to provide clear, engaging lessons, answer questions, and guide the group through the material.`;
     if (!chat) {
@@ -284,6 +313,15 @@ export const initializeStudySessionAgent = async (req, res) => {
     } else {
       chat.aiContext = aiContext;
     }
+
+    // Add a temporary message to indicate initialization is in progress
+    chat.messages.push({
+      sender: null,
+      role: "assistant",
+      content: "# Initializing study materials...",
+      timestamp: new Date()
+    });
+    await chat.save();
 
     // Fetch PDF buffers for the group
     const pdfBuffers = await getPdfBuffersForGroup(group);
@@ -303,13 +341,13 @@ export const initializeStudySessionAgent = async (req, res) => {
     // Generate lesson using Gemini, sending PDFs as prompt parts
     const aiLesson = await getGeminiResponse(null, agentId, memberNames, null, promptParts);
 
-    // Save the AI's lesson as the first message
-    chat.messages.push({
+    // Update the chat with the AI's lesson
+    chat.messages = [{
       sender: null,
       role: "assistant",
       content: aiLesson,
       timestamp: new Date()
-    });
+    }];
 
     // Generate quiz using Gemini
     const quizPrompt = `Based on the lesson about ${topic}, create a quiz with 5 multiple choice questions. 
