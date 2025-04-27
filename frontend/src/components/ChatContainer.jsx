@@ -21,7 +21,8 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
     deleteMessage,
     getGroupedMessages,
-    isMessagesLoading
+    isMessagesLoading,
+    isNexusThinking
   } = useChatStore();
 
   const { authUser, socket } = useAuthStore();
@@ -114,111 +115,72 @@ const ChatContainer = () => {
                         />
                       </div>
 
-                      {/* Content container */}
-                      <div className="flex-1">
-                        {/* Username and timestamp */}
+                      {/* Messages */}
+                      <div className="flex-1 min-w-0">
+                        {/* Sender name and timestamp */}
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium text-neutral-200">
                             {group.sender.name}
                           </span>
                           <span className="text-xs text-neutral-400">
-                            {formatMessageTime(group.messages[0].createdAt)}
+                            {formatMessageTime(group.date)}
                           </span>
                         </div>
 
-                        {/* First message */}
-                        <div className="ml-0 relative">
-                          {group.messages[0].image && (
-                            <div className="mb-1 max-w-lg rounded-md overflow-hidden border border-neutral-600">
-                              <img
-                                src={group.messages[0].image}
-                                alt="Attachment"
-                                className="max-w-full"
-                              />
-                            </div>
-                          )}
-                          {group.messages[0].text && (
+                        {/* Message content */}
+                        <div className="space-y-1">
+                          {group.messages.map((message, messageIndex) => (
                             <div
-                              ref={
-                                isLastGroup && group.messages.length === 1
-                                  ? messageEndRef
-                                  : null
-                              }
-                              className="text-neutral-200 group relative pr-8"
+                              key={message._id}
+                              className="group relative"
                             >
-                              <MarkdownMessage content={group.messages[0].text} />
-                              {group.isCurrentUser && (
-                                <button
-                                  onClick={() =>
-                                    deleteMessage(group.messages[0]._id)
-                                  }
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-1/2 -translate-y-1/2 px-2 py-1 bg-red-500/10 hover:bg-red-500/20 rounded text-red-500 hover:text-red-400 flex items-center gap-1"
-                                  title="Delete"
-                                >
-                                  <span className="text-xs font-medium">
-                                    Delete
-                                  </span>
-                                  <Trash2 size={14} />
-                                </button>
+                              {message.text && (
+                                <div className="text-neutral-200 pr-8">
+                                  <MarkdownMessage content={message.text} />
+                                  {group.isCurrentUser && (
+                                    <button
+                                      onClick={() =>
+                                        deleteMessage(message._id)
+                                      }
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-1/2 -translate-y-1/2 px-2 py-1 bg-red-500/10 hover:bg-red-500/20 rounded text-red-500 hover:text-red-400 flex items-center gap-1"
+                                      title="Delete"
+                                    >
+                                      <span className="text-xs font-medium">
+                                        Delete
+                                      </span>
+                                      <Trash2 size={14} />
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          )}
+                          ))}
                         </div>
-
-                        {/* Subsequent messages */}
-                        {group.messages.length > 1 && (
-                          <div className="space-y-1 mt-1">
-                            {group.messages
-                              .slice(1)
-                              .map((message, messageIndex) => {
-                                const isLastMessage =
-                                  isLastGroup &&
-                                  messageIndex === group.messages.length - 2;
-
-                                return (
-                                  <div
-                                    key={message._id}
-                                    ref={isLastMessage ? messageEndRef : null}
-                                    className="ml-0 group relative"
-                                  >
-                                    {message.image && (
-                                      <div className="mb-1 max-w-lg rounded-md overflow-hidden border border-neutral-600">
-                                        <img
-                                          src={message.image}
-                                          alt="Attachment"
-                                          className="max-w-full"
-                                        />
-                                      </div>
-                                    )}
-                                    {message.text && (
-                                      <div className="text-neutral-200 pr-8">
-                                        <MarkdownMessage content={message.text} />
-                                        {group.isCurrentUser && (
-                                          <button
-                                            onClick={() =>
-                                              deleteMessage(message._id)
-                                            }
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-1/2 -translate-y-1/2 px-2 py-1 bg-red-500/10 hover:bg-red-500/20 rounded text-red-500 hover:text-red-400 flex items-center gap-1"
-                                            title="Delete"
-                                          >
-                                            <span className="text-xs font-medium">
-                                              Delete
-                                            </span>
-                                            <Trash2 size={14} />
-                                          </button>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
                 );
               })
+            )}
+            {isNexusThinking && (
+              <div className="flex items-start gap-3 px-4 py-2">
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mt-0.5 border border-neutral-600">
+                  <img
+                    src="https://www.gravatar.com/avatar/?d=mp"
+                    alt="Nexus AI"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-neutral-200">Nexus AI</span>
+                  </div>
+                  <div className="text-neutral-400 flex items-center gap-2">
+                    <Loader2 className="animate-spin" size={16} />
+                    <span>Nexus is thinking...</span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
           <MessageInput />

@@ -94,8 +94,17 @@ const StudyChat = ({ topic, groupId, onClose }) => {
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isLoading]);
+
+  // Scroll to bottom when chat is loaded
+  useEffect(() => {
+    if (!isLoading && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "instant" });
+    }
+  }, [isLoading]);
 
   // Determine if the current user has completed the quiz
   const userQuizResponse = quiz?.responses?.find(
@@ -232,11 +241,13 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         ))}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-neutral-700 text-neutral-200 rounded-lg p-3">
-              Loading notes...
+            <div className="bg-neutral-700 text-neutral-200 rounded-lg p-3 flex items-center gap-2">
+              <Loader2 className="animate-spin" size={16} />
+              <span>Loading...</span>
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
       
       {/* Input */}

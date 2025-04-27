@@ -15,6 +15,7 @@ export const useChatStore = create((set, get) => ({
   isSidebarOpen: false,
   isOverlayOpen: false,
   isSidebarCollapsed: false,
+  isNexusThinking: false,
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -94,6 +95,7 @@ export const useChatStore = create((set, get) => ({
         };
         set((state) => ({
           messages: [...state.messages, userMessage],
+          isNexusThinking: messageData.text?.includes("@nexus") || false
         }));
 
         // Then send the message to the server
@@ -119,6 +121,7 @@ export const useChatStore = create((set, get) => ({
                 }
               : msg
           ),
+          isNexusThinking: false
         }));
       } else {
         // First add the user's message to the state
@@ -131,6 +134,7 @@ export const useChatStore = create((set, get) => ({
         };
         set((state) => ({
           messages: [...state.messages, userMessage],
+          isNexusThinking: messageData.text?.includes("@nexus") || false
         }));
 
         // Then send the message to the server
@@ -146,9 +150,11 @@ export const useChatStore = create((set, get) => ({
               ? { ...msg, ...res.data }
               : msg
           ),
+          isNexusThinking: false
         }));
       }
     } catch (error) {
+      set({ isNexusThinking: false });
       showError(error.response.data.message);
     }
   },
@@ -254,11 +260,26 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser, selectedGroup: null }),
-  setSelectedGroup: (selectedGroup) =>
-    set({ selectedGroup, selectedUser: null }),
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
-  toggleOverlay: () => set((state) => ({ isOverlayOpen: !state.isOverlayOpen })),
+  setSelectedUser: (selectedUser) => set({ 
+    selectedUser, 
+    selectedGroup: null,
+    isSidebarOpen: false,
+    isOverlayOpen: false
+  }),
+  setSelectedGroup: (selectedGroup) => set({ 
+    selectedGroup, 
+    selectedUser: null,
+    isSidebarOpen: false,
+    isOverlayOpen: false
+  }),
+  toggleSidebar: () => set((state) => ({ 
+    isSidebarOpen: !state.isSidebarOpen,
+    isOverlayOpen: false // Close overlay when sidebar is toggled
+  })),
+  toggleOverlay: () => set((state) => ({ 
+    isOverlayOpen: !state.isOverlayOpen,
+    isSidebarOpen: false // Close sidebar when overlay is toggled
+  })),
   toggleSidebarCollapse: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 
   getGroupedMessages: () => {
