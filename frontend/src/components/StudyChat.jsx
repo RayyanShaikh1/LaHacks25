@@ -241,6 +241,10 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       
       {/* Input */}
       <div className="p-4 border-t border-neutral-700">
+        <div className="mb-2 text-sm text-neutral-400 flex items-center gap-1">
+          <span>💡</span>
+          <span>Try @nexus and ask a question about the topic...</span>
+        </div>
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
             type="text"
