@@ -1,5 +1,5 @@
 import express from "express";
-import { processStudyFile, getStudySessionLesson, getStudyMaterial, handleStudyChat, getStudyChatHistory, initializeStudySessionAgent, saveQuizResponse } from "../controllers/studySession.controller.js";
+import { processStudyFile, getStudySessionLesson, getStudyMaterial, handleStudyChat, getStudyChatHistory, initializeStudySessionAgent, saveQuizResponse, getSkillsMetrics } from "../controllers/studySession.controller.js";
 import { protectRoute } from "../middleware/auth.protectedroute.js";
 import multer from "multer";
 
@@ -60,6 +60,13 @@ router.post(
   "/chat/:groupId/:topic/quiz-response",
   protectRoute,
   saveQuizResponse
+);
+
+// Route to get skills metrics
+router.get(
+  "/skills/:groupId",
+  protectRoute,
+  getSkillsMetrics
 );
 
 export default router; 

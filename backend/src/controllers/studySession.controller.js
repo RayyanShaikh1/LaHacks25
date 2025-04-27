@@ -426,4 +426,49 @@ export const saveQuizResponse = async (req, res) => {
     console.error("Error saving quiz response:", error);
     res.status(500).json({ error: "Failed to save quiz response" });
   }
+};
+
+export const getSkillsMetrics = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user._id;
+
+    // Get all study session chats for this group
+    const chats = await StudySessionChat.find({ groupId })
+      .select('topic quiz')
+      .populate('quiz.responses.user', 'name');
+
+    // Calculate skills metrics
+    const skills = chats.map(chat => {
+      if (!chat.quiz || !chat.quiz.responses) return null;
+
+      // Find the user's response
+      const userResponse = chat.quiz.responses.find(
+        resp => resp.user._id.toString() === userId.toString()
+      );
+
+      if (!userResponse) return null;
+
+      // Calculate score
+      const totalQuestions = chat.quiz.questions.length;
+      const correctAnswers = chat.quiz.questions.reduce((acc, question, index) => {
+        return acc + (userResponse.answers[index] === question.correct ? 1 : 0);
+      }, 0);
+
+      const score = Math.round((correctAnswers / totalQuestions) * 100);
+
+      return {
+        topic: chat.topic,
+        score,
+        totalQuestions,
+        correctAnswers,
+        completedAt: userResponse.completed ? new Date() : null
+      };
+    }).filter(skill => skill !== null);
+
+    res.status(200).json(skills);
+  } catch (error) {
+    console.error("Error in getSkillsMetrics:", error);
+    res.status(500).json({ error: "Failed to get skills metrics" });
+  }
 }; 
