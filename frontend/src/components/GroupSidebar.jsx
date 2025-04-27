@@ -62,7 +62,7 @@ const GroupSidebar = () => {
                           <div className="pt-1">
                             <div className="w-full bg-neutral-700 rounded-full h-1.5">
                               <div 
-                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                className="bg-[#4e27a9fb] h-1.5 rounded-full transition-all duration-300"
                                 style={{ width: `${userScore.score}%` }}
                               />
                             </div>
