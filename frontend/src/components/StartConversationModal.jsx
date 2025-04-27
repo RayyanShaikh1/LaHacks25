@@ -27,7 +27,7 @@ const StartConversationModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-gradient-to-b from-[#070738] to-[#0a0a45] rounded-lg w-full max-w-md p-6 border border-white/10 shadow-xl">
+      <div className="bg-neutral-900 rounded-lg w-full max-w-md p-6 border border-white/10 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-white">
             Start a Conversation
@@ -64,7 +64,7 @@ const StartConversationModal = ({ isOpen, onClose }) => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#070738] hover:bg-[#0a0a45] text-white rounded-md transition-colors border border-white/20"
+              className="px-4 py-2 bg-neutral-900 hover:bg-[#0a0a45] text-white rounded-md transition-colors border border-white/20"
             >
               Start Conversation
             </button>
