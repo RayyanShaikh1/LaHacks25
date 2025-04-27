@@ -278,7 +278,8 @@ export const useChatStore = create((set, get) => ({
   })),
   toggleOverlay: () => set((state) => ({ 
     isOverlayOpen: !state.isOverlayOpen,
-    isSidebarOpen: false // Close sidebar when overlay is toggled
+    isSidebarOpen: false, // Close sidebar when overlay is toggled
+    isSidebarCollapsed: true // Collapse sidebar when overlay is opened
   })),
   toggleSidebarCollapse: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 

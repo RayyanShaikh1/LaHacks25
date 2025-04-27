@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from "react";
-import ReactFlow, { Controls, Background, useReactFlow, ReactFlowProvider } from "react-flow-renderer";
+import ReactFlow, { Controls, useReactFlow, ReactFlowProvider } from "react-flow-renderer";
 
 // Enhanced distance and overlap detection
 const getDistance = (x1, y1, x2, y2) => {
@@ -238,6 +238,64 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
   return { nodes, edges };
 }
 
+// Dots overlay background component
+const DotsOverlay = () => {
+  React.useEffect(() => {
+    const canvas = document.getElementById("lesson-tree-dots-canvas");
+    if (!(canvas instanceof HTMLCanvasElement)) return;
+    
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+    
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    
+    const drawDots = () => {
+      const gridSize = 60; // Size of each grid cell
+      const dotRadius = 1.5; // Fixed radius for all dots
+      const dotOpacity = 0.15; // Fixed opacity for all dots
+      
+      // Calculate number of dots needed to cover the canvas
+      const cols = Math.ceil(canvas.width / gridSize);
+      const rows = Math.ceil(canvas.height / gridSize);
+      
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw dots in a grid pattern
+      for (let row = 0; row <= rows; row++) {
+        for (let col = 0; col <= cols; col++) {
+          const x = col * gridSize;
+          const y = row * gridSize;
+          
+          ctx.beginPath();
+          ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(200, 200, 255, ${dotOpacity})`;
+          ctx.fill();
+        }
+      }
+    };
+
+    const animate = () => {
+      drawDots();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    animate();
+    
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+  
+  return <canvas id="lesson-tree-dots-canvas" className="absolute inset-0 z-0" />;
+};
+
 const LessonTreeInner = ({ lessonJson, onNodeClick }) => {
   const { nodes, edges } = useMemo(() => {
     if (!lessonJson || !lessonJson.course) return { nodes: [], edges: [] };
@@ -290,7 +348,7 @@ const LessonTreeInner = ({ lessonJson, onNodeClick }) => {
 
   return (
     <div className="w-full h-[600px] flex flex-col">
-      <div className="flex-1 relative bg-neutral-800/80">
+      <div className="flex-1 relative bg-[#171717]">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -299,12 +357,12 @@ const LessonTreeInner = ({ lessonJson, onNodeClick }) => {
           defaultZoom={0.7}
           minZoom={0.1}
           maxZoom={2}
-          attributionPosition="bottom-right"
+          className="[&_.react-flow__attribution]:!hidden"
         >
-          <Background color="#4a044e" gap={16} size={1} />
+          <DotsOverlay />
         </ReactFlow>
       </div>
-      <div className="flex gap-1 bg-neutral-800/80 p-1 rounded-lg mt-2">
+      <div className="flex gap-1 bg-[#171717] p-1 rounded-lg mt-2">
         <button
           onClick={handleZoomIn}
           className="px-2 py-1 text-xs text-neutral-200 hover:bg-neutral-700 rounded transition-colors"

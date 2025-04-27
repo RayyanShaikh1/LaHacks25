@@ -83,14 +83,14 @@ const StudySession = () => {
   };
 
   return (
-    <div className="absolute inset-0 bg-neutral-800 z-10">
+    <div className="absolute inset-0 bg-[#171717] z-50">
       {/* Main container with responsive layout */}
       <div className="relative h-full flex flex-col md:flex-row">
         {/* Left panel - Lesson Tree */}
         <div className={`flex-1 flex flex-col border-r border-neutral-700 ${activeChat ? 'md:w-1/2 md:flex-1' : 'w-full'}`}>
           {/* Header */}
           <div className="p-4 border-b border-neutral-700">
-            <h2 className="text-lg font-semibold text-neutral-200">Study Session</h2>
+            <h2 className="text-lg font-semibold text-neutral-200 py-0.5">Study Session</h2>
           </div>
           
           {/* Content */}
@@ -130,7 +130,7 @@ const StudySession = () => {
 
         {/* Right panel - Study Chat */}
         {activeChat && (
-          <div className="absolute md:relative inset-0 md:inset-auto md:flex-1 bg-neutral-800 z-20">
+          <div className="absolute md:relative inset-0 md:inset-auto md:flex-1 bg-[#171717] z-20">
             <StudyChat 
               topic={activeChat.topic}
               groupId={selectedGroup?._id}
