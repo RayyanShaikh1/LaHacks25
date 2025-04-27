@@ -1,9 +1,8 @@
 import React, { useMemo, useCallback } from "react";
 import ReactFlow, { Controls, Background, useReactFlow, ReactFlowProvider } from "react-flow-renderer";
 
-// Recursively build nodes and edges from hierarchical JSON
 function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
-  // Add course node in the center
+  // Nucleus (course node) in the center
   const courseId = "root";
   nodes.push({
     id: courseId,
@@ -13,29 +12,36 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
     },
     position: { x, y },
     style: {
-      background: '#4747d1',
+      background: 'radial-gradient(circle at center, #6b46c1 0%, #4c1d95 100%)',
       color: 'white',
-      borderRadius: 6,
-      padding: 6,
-      minWidth: 220,
+      borderRadius: '50%',
+      padding: 10,
+      width: 250,
+      height: 250,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       textAlign: 'center',
       fontWeight: 600,
-      fontSize: 18,
-      border: 'none',
+      fontSize: 20,
+      border: '2px solid rgba(139, 92, 246, 0.5)',
+      boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
     },
   });
 
-  // Calculate positions for module nodes in a circle around the center
+  // Dendrites (module nodes) arranged in a more organic pattern
   const moduleCount = courseData.modules.length;
-  const moduleRadius = 300; // Increased distance from center to modules
-  const angleStep = (2 * Math.PI) / moduleCount; // Angle between modules
+  const moduleRadius = 450; // Increased radius for more spread
+  const angleStep = (2 * Math.PI) / moduleCount;
   
   courseData.modules.forEach((module, i) => {
     const moduleId = `module-${i}`;
-    // Calculate position using polar coordinates
-    const angle = i * angleStep;
-    const moduleX = x + moduleRadius * Math.cos(angle);
-    const moduleY = y + moduleRadius * Math.sin(angle);
+    // Add some randomness to position for organic feel
+    const angle = i * angleStep + (Math.random() * 1 - 0.1);
+    // Increase the radius variation for more random distances
+    const radiusVariation = moduleRadius + (Math.random() * 200 - 30); // More variance in distance
+    const moduleX = x + radiusVariation * Math.cos(angle);
+    const moduleY = y + radiusVariation * Math.sin(angle);
     
     nodes.push({
       id: moduleId,
@@ -45,39 +51,51 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       },
       position: { x: moduleX, y: moduleY },
       style: {
-        background: '#23234a',
+        background: 'radial-gradient(circle at center, #4c1d95 0%, #312e81 100%)',
         color: 'white',
-        borderRadius: 6,
-        padding: 6,
-        minWidth: 180,
+        borderRadius: '40%',
+        padding: 8,
+        width: 160,
+        height: 160,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         textAlign: 'center',
         fontWeight: 500,
-        fontSize: 14,
-        border: 'none',
+        fontSize: 16,
+        border: '2px solid rgba(139, 92, 246, 0.3)',
+        boxShadow: '0 0 15px rgba(139, 92, 246, 0.2)',
       },
     });
 
+    // Synaptic connections (edges)
     edges.push({
       id: `e-${courseId}-${moduleId}`,
       source: courseId,
       target: moduleId,
-      type: 'straight',
-      style: { stroke: '#b3b3ff', strokeWidth: 2 },
-      animated: false,
+      type: 'smoothstep',
+      style: { 
+        stroke: '#8b5cf6',
+        strokeWidth: 3,
+        opacity: 0.6,
+      },
+      animated: true,
+      animationSpeed: 0.5,
     });
 
-    // Calculate positions for lesson nodes in a semi-circle below each module
+    // Axon terminals (lesson nodes)
     const lessonCount = module.lessons.length;
-    const lessonRadius = 200; // Distance from module to lessons
-    const lessonAngleStep = Math.PI / (lessonCount + 1); // Angle between lessons
-    const startAngle = angle - Math.PI / 2; // Start from the bottom of the module
+    const baseLessonRadius = 400;
+    const lessonAngleSpread = Math.PI / 2; // 90-degree spread
+    const startAngle = angle - lessonAngleSpread / 2;
     
     module.lessons.forEach((lesson, j) => {
       const lessonId = `lesson-${i}-${j}`;
-      // Calculate position relative to the module
-      const lessonAngle = startAngle + (j + 1) * lessonAngleStep;
-      const lessonX = moduleX + lessonRadius * Math.cos(lessonAngle);
-      const lessonY = moduleY + lessonRadius * Math.sin(lessonAngle);
+      const lessonAngle = startAngle + (j * lessonAngleSpread / (lessonCount - 1 || 1));
+      // Increase the radius variation for lessons
+      const radiusVar = baseLessonRadius + (Math.random() * 150 - 75); // More variance in distance
+      const lessonX = moduleX + radiusVar * Math.cos(lessonAngle);
+      const lessonY = moduleY + radiusVar * Math.sin(lessonAngle);
       
       nodes.push({
         id: lessonId,
@@ -87,15 +105,20 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
         },
         position: { x: lessonX, y: lessonY },
         style: {
-          background: '#1a1a3a',
+          background: 'radial-gradient(circle at center, #312e81 0%, #1e1b4b 100%)',
           color: 'white',
-          borderRadius: 6,
+          borderRadius: '30%',
           padding: 6,
-          minWidth: 140,
+          width: 120,
+          height: 120,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           textAlign: 'center',
           fontWeight: 400,
-          fontSize: 12,
-          border: 'none',
+          fontSize: 14,
+          border: '2px solid rgba(139, 92, 246, 0.2)',
+          boxShadow: '0 0 10px rgba(139, 92, 246, 0.1)',
         },
       });
 
@@ -103,9 +126,14 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
         id: `e-${moduleId}-${lessonId}`,
         source: moduleId,
         target: lessonId,
-        type: 'straight',
-        style: { stroke: '#b3b3ff', strokeWidth: 2 },
-        animated: false,
+        type: 'smoothstep',
+        style: { 
+          stroke: '#8b5cf6',
+          strokeWidth: 2,
+          opacity: 0.4,
+        },
+        animated: true,
+        animationSpeed: 0.3,
       });
     });
   });
@@ -141,18 +169,18 @@ const LessonTreeInner = ({ lessonJson, onNodeClick }) => {
 
   return (
     <div className="w-full h-[600px] flex flex-col">
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-neutral-800/80">
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodeClick={handleNodeClick}
           fitView
-          defaultZoom={0.8}
+          defaultZoom={0.7}
           minZoom={0.1}
           maxZoom={2}
           attributionPosition="bottom-right"
         >
-          <Background color="#404040" gap={16} />
+          <Background color="#4a044e" gap={16} size={1} />
           <Controls />
         </ReactFlow>
       </div>
@@ -191,4 +219,4 @@ const LessonTree = ({ lessonJson, onNodeClick }) => {
   );
 };
 
-export default LessonTree; 
+export default LessonTree;

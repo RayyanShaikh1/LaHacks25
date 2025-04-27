@@ -119,13 +119,28 @@ const FormField = ({ type, icon, placeholder, value, onChange, name }) => {
             type="button"
             tabIndex={-1}
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#c8c8ff] hover:text-white transition"
+            className="absolute right-3 top-0 bottom-0 flex items-center justify-center -translate-y-1/2 text-[#c8c8ff] hover:text-white transition"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
       </div>
     </div>
+  );
+};
+
+// Social login button
+const SocialButton = ({ icon, label, onClick }) => {
+  return (
+    <motion.button
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
+      className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white/10 text-white border border-white/20 hover:bg-white/15 transition-all"
+      onClick={onClick}
+    >
+      {icon}
+      <span>{label}</span>
+    </motion.button>
   );
 };
 
@@ -224,28 +239,18 @@ const SignUpPage = () => {
             />
             
             {/* Submit button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={isSigningUp}
-              type="submit"
-              className="w-full py-4 mt-2 bg-gradient-to-r from-[#070738] to-[#110a5e] hover:from-[#0a0a45] hover:to-[#150c70] rounded-xl text-white font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-70"
-            >
-              {isSigningUp ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Creating Account...</span>
-                </>
+            <SocialButton
+              icon={isSigningUp ? (
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
               ) : (
-                <>
-                  <UserPlus size={20} />
-                  <span>Create Account</span>
-                </>
+                <UserPlus size={20} />
               )}
-            </motion.button>
+              label={isSigningUp ? "Creating Account..." : "Create Account"}
+              onClick={handleSubmit}
+            />
           </motion.form>
           
           {/* Sign in link */}
