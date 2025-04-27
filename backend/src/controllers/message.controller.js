@@ -121,10 +121,12 @@ export const sendMessage = async (req, res) => {
       participants: { $all: [senderId, receiverId] },
     });
 
+    let isNewConversation = false;
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [senderId, receiverId],
       });
+      isNewConversation = true;
     }
 
     let imageUrl;
@@ -146,7 +148,29 @@ export const sendMessage = async (req, res) => {
 
     // Get sender information
     const sender = await User.findById(senderId).select("name profilePic");
+    const receiver = await User.findById(receiverId).select("name profilePic");
 
+    // If this is a new conversation, emit newConversation event to both users
+    if (isNewConversation) {
+      const senderSocketId = getReceiverSocketId(senderId);
+      const receiverSocketId = getReceiverSocketId(receiverId);
+
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("newConversation", {
+          user: receiver,
+          message: newMessage,
+        });
+      }
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newConversation", {
+          user: sender,
+          message: newMessage,
+        });
+      }
+    }
+
+    // Emit new message event
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", {

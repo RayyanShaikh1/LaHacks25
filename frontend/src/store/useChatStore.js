@@ -338,7 +338,53 @@ export const useChatStore = create((set, get) => ({
 
   subscribeToConversations: () => {
     const socket = useAuthStore.getState().socket;
+    if (!socket) return () => {};
 
+    // Listen for new direct messages
+    socket.on("newMessage", (newMessage) => {
+      const { selectedUser } = get();
+      if (!selectedUser) return;
+
+      const isAIMessage = newMessage.senderId === "nexusai" || newMessage.isAI;
+      const isRelevantMessage =
+        (newMessage.senderId === selectedUser._id ||
+          newMessage.receiverId === selectedUser._id ||
+          isAIMessage) &&
+        (newMessage.senderId === selectedUser._id ||
+          newMessage.receiverId === selectedUser._id ||
+          selectedUser._id === "nexusai" ||
+          newMessage.receiverId === useAuthStore.getState().authUser._id);
+
+      if (isRelevantMessage) {
+        const enrichedMessage = {
+          ...newMessage,
+          isAI: isAIMessage,
+        };
+        set((state) => ({
+          messages: [...state.messages, enrichedMessage],
+        }));
+      }
+    });
+
+    // Listen for new group messages
+    socket.on("newGroupMessage", (newMessage) => {
+      const { selectedGroup } = get();
+      if (selectedGroup && newMessage.groupId === selectedGroup._id) {
+        const messageWithSender = {
+          ...newMessage,
+          senderId: {
+            _id: newMessage.senderId,
+            name: newMessage.senderName,
+            profilePic: newMessage.senderProfilePic,
+          },
+        };
+        set((state) => ({
+          messages: [...state.messages, messageWithSender],
+        }));
+      }
+    });
+
+    // Listen for new conversations
     socket.on("newConversation", ({ user, message }) => {
       set((state) => {
         // Check if user already exists in conversations and is not Nexus AI
@@ -350,8 +396,18 @@ export const useChatStore = create((set, get) => ({
       });
     });
 
+    // Listen for new groups
+    socket.on("newGroup", (newGroup) => {
+      set((state) => ({
+        groups: [...state.groups, newGroup],
+      }));
+    });
+
     return () => {
+      socket.off("newMessage");
+      socket.off("newGroupMessage");
       socket.off("newConversation");
+      socket.off("newGroup");
     };
   },
 }));
