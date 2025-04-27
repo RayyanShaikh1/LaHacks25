@@ -391,13 +391,34 @@ export const saveQuizResponse = async (req, res) => {
     const score = (correctAnswers / chat.quiz.questions.length) * 100;
     quizResults += `Overall Score: ${score.toFixed(0)}%\n`;
 
-    // Send quiz results to group chat's Gemini agent
+    // Get the group to access study materials
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ error: "Group not found" });
+    }
+
+    // Fetch PDF buffers for the group
+    const pdfBuffers = await getPdfBuffersForGroup(group);
+    
+    // Prepare prompt parts with both quiz results and PDF content
+    const promptParts = [
+      { text: quizResults },
+      ...pdfBuffers.map(buffer => ({
+        inlineData: {
+          mimeType: "application/pdf",
+          data: buffer.toString("base64"),
+        }
+      }))
+    ];
+
+    // Send quiz results and PDF content to group chat's Gemini agent
     const groupAgentId = `group_${groupId}`;
     await getGeminiResponse(
-      quizResults,
+      null,  // No text prompt since we're using promptParts
       groupAgentId,
       null,
-      "system"
+      "system",
+      promptParts
     );
 
     res.status(200).json({ success: true });
