@@ -72,7 +72,7 @@ const ChatHeader = () => {
             <button 
               onClick={toggleSidebar}
               className={`p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors`}
-              title="Toggle Sidebar"
+              title="Skills Sidebar"
             >
               <Sidebar size={18} className={`${
             isSidebarOpen 
@@ -83,7 +83,7 @@ const ChatHeader = () => {
             <button 
               onClick={toggleOverlay}
               className={`p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors`}
-              title="Toggle Overlay"
+              title="Tree Map"
             >
               <Layout size={18} className={`${
             isOverlayOpen 
