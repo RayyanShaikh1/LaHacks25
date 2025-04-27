@@ -23,7 +23,23 @@ export const createGroup = async (req, res) => {
     });
 
     await newGroup.save();
-    res.status(201).json(newGroup);
+
+    // Emit new group event to all members
+    const populatedGroup = await Group.findById(newGroup._id)
+      .populate("members", "-password")
+      .populate("admin", "-password");
+
+    // Notify all members about the new group
+    members.forEach((memberId) => {
+      if (memberId.toString() !== adminId.toString()) {
+        const memberSocketId = getReceiverSocketId(memberId);
+        if (memberSocketId) {
+          io.to(memberSocketId).emit("newGroup", populatedGroup);
+        }
+      }
+    });
+
+    res.status(201).json(populatedGroup);
   } catch (error) {
     console.error("Error in createGroup: ", error.message);
     res.status(500).json({ error: "Internal server error" });
