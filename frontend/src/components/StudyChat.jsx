@@ -92,19 +92,6 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     };
   }, [socket, groupId, topic]);
 
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages, isLoading]);
-
-  // Scroll to bottom when chat is loaded
-  useEffect(() => {
-    if (!isLoading && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "instant" });
-    }
-  }, [isLoading]);
 
   // Determine if the current user has completed the quiz
   const userQuizResponse = quiz?.responses?.find(
