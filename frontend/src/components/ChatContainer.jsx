@@ -1,6 +1,6 @@
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef } from "react";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2, PenLine, Lightbulb, BarChart2, Eye } from "lucide-react";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -9,6 +9,18 @@ import { formatMessageTime } from "../lib/utils";
 import MarkdownMessage from "./MarkdownMessage";
 import GroupSidebar from "./GroupSidebar";
 import StudySession from "./StudySession";
+
+const ActionButton = ({ icon, label, onClick }) => (
+  <button
+    onClick={onClick}
+    className="flex items-center gap-3 px-6 py-4 rounded-xl bg-neutral-800/80 hover:bg-neutral-800 border border-neutral-700 transition-all hover:scale-[1.02] active:scale-[0.98]"
+  >
+    <div className="p-2 rounded-lg bg-neutral-800">
+      {icon}
+    </div>
+    <span className="text-lg font-medium text-neutral-200">{label}</span>
+  </button>
+);
 
 const ChatContainer = () => {
   const {
@@ -84,12 +96,33 @@ const ChatContainer = () => {
               </div>
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-neutral-400">
-                <p className="text-lg">
-                  {selectedGroup 
-                    ? "No messages yet"
-                    : "No messages yet"}
-                </p>
-                <p className="text-sm">
+                <h2 className="text-2xl font-bold text-neutral-200 mb-8">Get Started</h2>
+                
+                {/* Action Buttons Grid */}
+                <div className="grid grid-cols-2 gap-4 max-w-2xl">
+                  <ActionButton
+                    icon={<PenLine className="w-5 h-5 text-purple-400" />}
+                    label="How can I improve?"
+                    onClick={() => {}}
+                  />
+                  <ActionButton
+                    icon={<Lightbulb className="w-5 h-5 text-yellow-400" />}
+                    label="What should I study?"
+                    onClick={() => {}}
+                  />
+                  <ActionButton
+                    icon={<BarChart2 className="w-5 h-5 text-blue-400" />}
+                    label="Analyze my weaknesses"
+                    onClick={() => {}}
+                  />
+                  <ActionButton
+                    icon={<Eye className="w-5 h-5 text-green-400" />}
+                    label="Analyze images or notes"
+                    onClick={() => {}}
+                  />
+                </div>
+                
+                <p className="text-sm mt-8">
                   {selectedGroup 
                     ? "Click the Layout icon in the top right to open the Study Session Overlay"
                     : "Start the conversation!"}

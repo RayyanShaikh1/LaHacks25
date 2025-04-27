@@ -74,12 +74,6 @@ const MessageInput = () => {
           </div>
         </div>
       )}
-
-      <div className="mb-2 text-sm text-neutral-400 flex items-center gap-1">
-        <span>💡</span>
-        <span>Try @nexus and ask a question...</span>
-      </div>
-
       <form onSubmit={handleSendMessage} className="flex items-center gap-2">
         <div className="flex-1 flex items-center gap-2 bg-neutral-700/50 rounded-lg px-3 py-2 border border-neutral-600">
           <button
