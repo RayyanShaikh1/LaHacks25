@@ -19,7 +19,6 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
       }).then(() => {
         if (onQuizCompleted) onQuizCompleted(selectedAnswers);
       }).catch((err) => {
-        // Optionally handle error
         console.error("Failed to save quiz results", err);
       });
     }
@@ -56,6 +55,18 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
     }
   };
 
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+
+  const handleRetake = () => {
+    setSelectedAnswers([]);
+    setCurrentQuestionIndex(0);
+    setShowResults(false);
+  };
+
   if (!quiz) return null;
 
   return (
@@ -63,7 +74,9 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
       <div className="bg-neutral-800 rounded-lg w-full max-w-2xl mx-4 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-700">
-          <h3 className="text-lg font-semibold text-neutral-200">Quiz</h3>
+          <h3 className="text-lg font-semibold text-neutral-200">
+            {isReviewMode ? "Quiz Review" : "Quiz"}
+          </h3>
           <button 
             onClick={onClose}
             className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
@@ -85,9 +98,12 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
               </div>
 
               {/* Question */}
-              <h4 className="text-xl font-semibold text-neutral-200 mb-6">
-                {currentQuestion.question}
-              </h4>
+              <div className="mb-4">
+                <p className="text-neutral-300">
+                  Question {currentQuestionIndex + 1} of {quiz.questions.length}
+                </p>
+                <p className="text-neutral-200 mt-2">{currentQuestion.question}</p>
+              </div>
 
               {/* Options */}
               <div className="space-y-3">
@@ -108,22 +124,23 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
               </div>
 
               {/* Next button */}
-              <button
-                onClick={handleNext}
-                disabled={selectedAnswers[currentQuestionIndex] === undefined || isReviewMode}
-                className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold 
-                         hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
-                         flex items-center justify-center gap-2"
-              >
-                {currentQuestionIndex < quiz.questions.length - 1 ? (
-                  <>
-                    Next Question
-                    <ChevronRight size={20} />
-                  </>
-                ) : (
-                  "Submit Quiz"
-                )}
-              </button>
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentQuestionIndex === 0}
+                  className="px-4 py-2 rounded-lg bg-neutral-700 text-neutral-200 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+                >
+                  {currentQuestionIndex === quiz.questions.length - 1
+                    ? "Submit"
+                    : "Next"}
+                </button>
+              </div>
             </>
           ) : (
             <div className="space-y-6">
@@ -157,6 +174,17 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
                     </p>
                   </div>
                 ))}
+              </div>
+
+              <div className="flex justify-end mt-6">
+                {!isReviewMode && (
+                  <button
+                    onClick={handleRetake}
+                    className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+                  >
+                    Retake Quiz
+                  </button>
+                )}
               </div>
             </div>
           )}

@@ -203,7 +203,6 @@ const LessonTreeInner = ({ lessonJson, onNodeClick }) => {
           attributionPosition="bottom-right"
         >
           <Background color="#4a044e" gap={16} size={1} />
-          <Controls />
         </ReactFlow>
       </div>
       <div className="flex gap-1 bg-neutral-800/80 p-1 rounded-lg mt-2">

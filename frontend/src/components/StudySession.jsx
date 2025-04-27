@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { Upload, Loader2, X } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import { axiosInstance } from "../lib/axios";
 import LessonTree from "./LessonTree";
 import StudyChat from "./StudyChat";
 
 const StudySession = () => {
-  const { isOverlayOpen, selectedGroup, toggleOverlay } = useChatStore();
+  const { isOverlayOpen, selectedGroup } = useChatStore();
   const [isUploading, setIsUploading] = useState(false);
   const [lessonPlan, setLessonPlan] = useState(null);
   const [error, setError] = useState(null);
@@ -88,15 +88,7 @@ const StudySession = () => {
       <div className={`${activeChat ? 'w-1/2' : 'w-1/2'} flex flex-col border-r border-neutral-700`}>
         {/* Header */}
         <div className="p-4 border-b border-neutral-700">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-neutral-200">Study Session</h2>
-            <button
-              onClick={toggleOverlay}
-              className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
-            >
-              <X size={18} />
-            </button>
-          </div>
+          <h2 className="text-lg font-semibold text-neutral-200">Study Session</h2>
         </div>
         
         {/* Content */}

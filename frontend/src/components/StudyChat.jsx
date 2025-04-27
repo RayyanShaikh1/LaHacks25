@@ -152,6 +152,11 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     setQuiz({ ...quiz, responses: updatedResponses });
   };
 
+  const handleRetakeQuiz = () => {
+    setReviewAnswers(null);
+    setShowQuiz(true);
+  };
+
   return (
     <div className="flex flex-col h-full bg-neutral-800 border-l border-neutral-700">
       {/* Header */}
@@ -169,14 +174,24 @@ const StudyChat = ({ topic, groupId, onClose }) => {
             </button>
           )}
           {quiz && hasCompletedQuiz && (
-            <button
-              onClick={handleReviewQuiz}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600 text-white 
-                       hover:bg-green-700 transition-colors text-sm font-medium"
-            >
-              <Eye size={16} />
-              Review Quiz
-            </button>
+            <>
+              <button
+                onClick={handleReviewQuiz}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600 text-white 
+                         hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                <Eye size={16} />
+                Review Quiz
+              </button>
+              <button
+                onClick={handleRetakeQuiz}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white 
+                         hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                <BookOpen size={16} />
+                Retake Quiz
+              </button>
+            </>
           )}
           <button 
             onClick={onClose}
@@ -189,43 +204,38 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="flex flex-col items-center gap-2 text-neutral-400">
-              <Loader2 className="animate-spin" size={24} />
-              <p>Loading chat...</p>
+        {messages.map((msg, i) => (
+          <div 
+            key={i} 
+            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div 
+              className={`max-w-[80%] rounded-lg p-3 ${
+                msg.role === "user" 
+                  ? "bg-blue-600 text-white" 
+                  : msg.role === "system"
+                  ? "bg-red-600 text-white"
+                  : "bg-neutral-700 text-neutral-200"
+              }`}
+            >
+              {/* Show sender name if available and not assistant/system */}
+              {msg.role === "user" && msg.sender && msg.sender.name && (
+                <div className="text-xs font-semibold mb-1 text-blue-200">{msg.sender.name}</div>
+              )}
+              {msg.role === "assistant" && (
+                <div className="text-xs font-semibold mb-1 text-green-200">AI Assistant</div>
+              )}
+              {/* Render markdown for all messages */}
+              <MarkdownMessage content={msg.content} />
             </div>
           </div>
-        ) : (
-          <>
-            {messages.map((msg, i) => (
-              <div 
-                key={i} 
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div 
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    msg.role === "user" 
-                      ? "bg-blue-600 text-white" 
-                      : msg.role === "system"
-                      ? "bg-red-600 text-white"
-                      : "bg-neutral-700 text-neutral-200"
-                  }`}
-                >
-                  {/* Show sender name if available and not assistant/system */}
-                  {msg.role === "user" && msg.sender && msg.sender.name && (
-                    <div className="text-xs font-semibold mb-1 text-blue-200">{msg.sender.name}</div>
-                  )}
-                  {msg.role === "assistant" && (
-                    <div className="text-xs font-semibold mb-1 text-green-200">AI Assistant</div>
-                  )}
-                  {/* Render markdown for all messages */}
-                  <MarkdownMessage content={msg.content} />
-                </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-neutral-700 text-neutral-200 rounded-lg p-3">
+              Loading notes...
+            </div>
+          </div>
         )}
       </div>
       

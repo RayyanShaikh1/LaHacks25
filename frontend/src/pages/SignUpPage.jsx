@@ -119,7 +119,7 @@ const FormField = ({ type, icon, placeholder, value, onChange, name }) => {
             type="button"
             tabIndex={-1}
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-0 bottom-0 flex items-center justify-center -translate-y-1/2 text-[#c8c8ff] hover:text-white transition"
+            className="absolute right-3 top-1/2 translate-y-1/2 text-[#c8c8ff] hover:text-white transition"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>

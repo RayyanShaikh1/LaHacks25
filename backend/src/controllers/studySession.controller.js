@@ -326,7 +326,7 @@ export const initializeStudySessionAgent = async (req, res) => {
     // Fetch PDF buffers for the group
     const pdfBuffers = await getPdfBuffersForGroup(group);
     const promptParts = [
-      { text: `${aiContext}\n\nPlease provide a comprehensive lesson about ${topic}.` },
+      { text: `${aiContext}\n\nPlease provide a brief lesson about ${topic}.` },
       ...pdfBuffers.map(buffer => ({
         inlineData: {
           mimeType: "application/pdf",
