@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { showError, showSuccess } from "../utils/errorHandler";
 import { useChatStore } from "../store/useChatStore";
 import { X, UserPlus } from "lucide-react";
@@ -6,6 +6,13 @@ import { X, UserPlus } from "lucide-react";
 const StartConversationModal = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
   const { startConversation } = useChatStore();
+
+  // Clear email when modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setEmail("");
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
