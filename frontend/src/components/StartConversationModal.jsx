@@ -42,7 +42,7 @@ const StartConversationModal = ({ isOpen, onClose }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
-            <label className="block text-sm font-medium text-[#c8c8ff] mb-2">
+            <label className="block text-sm font-medium text-[#7142dd] mb-2">
               Enter User's Email
             </label>
             <input
@@ -58,13 +58,13 @@ const StartConversationModal = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-[#c8c8ff] hover:text-white transition-colors"
+              className="px-4 py-2 text-white hover:text-[#7142dd] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-neutral-900 hover:bg-[#0a0a45] text-white rounded-md transition-colors border border-white/20"
+              className="px-4 py-2 bg-neutral-900 hover:bg-[#7142dd] text-white rounded-md transition-colors border border-white/20"
             >
               Start Conversation
             </button>
