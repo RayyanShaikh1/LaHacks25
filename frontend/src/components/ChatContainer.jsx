@@ -39,6 +39,14 @@ const ChatContainer = () => {
 
   const { authUser, socket } = useAuthStore();
   const messageEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+
+  // Scroll to bottom helper function
+  const scrollToBottom = (behavior = 'smooth') => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     if (selectedGroup) {
@@ -72,11 +80,17 @@ const ChatContainer = () => {
     socket,
   ]);
 
+  // Scroll to bottom when messages change
   useEffect(() => {
-    if (messageEndRef.current && messages) {
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    scrollToBottom();
   }, [messages]);
+
+  // Scroll to bottom when chat is loaded
+  useEffect(() => {
+    if (!isMessagesLoading) {
+      scrollToBottom('instant');
+    }
+  }, [isMessagesLoading]);
 
   // Get grouped messages from the store
   const groupedMessages = getGroupedMessages();
@@ -86,7 +100,10 @@ const ChatContainer = () => {
       <ChatHeader />
       <div className="flex-1 flex overflow-hidden relative">
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto space-y-4 py-4">
+          <div 
+            ref={chatContainerRef}
+            className="flex-1 overflow-y-auto space-y-4 py-4"
+          >
             {isMessagesLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="flex flex-col items-center gap-2 text-neutral-400">
@@ -244,6 +261,7 @@ const ChatContainer = () => {
                 </div>
               </div>
             )}
+            <div ref={messageEndRef} />
           </div>
           <MessageInput />
         </div>
