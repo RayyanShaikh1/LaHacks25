@@ -165,7 +165,7 @@ export const getStudyChatHistory = async (req, res) => {
   try {
     const { groupId, topic } = req.query;
     const chat = await StudySessionChat.findOne({ groupId, topic })
-      .populate('messages.sender', 'name');
+      .populate('messages.sender', 'name profilePic');
     res.json({ 
       messages: chat ? chat.messages : [],
       quiz: chat && chat.quiz ? chat.quiz : null
@@ -186,25 +186,31 @@ export const handleStudyChat = async (req, res) => {
       chat = new StudySessionChat({ groupId, topic, messages: [] });
     }
 
-    // Add user message
-    chat.messages.push({
+    // Get sender's user information
+    const senderUser = await User.findById(sender).select("name profilePic");
+    if (!senderUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Add user message with sender information
+    const userMessage = {
       sender,
       role: "user",
       content: message,
       timestamp: new Date()
-    });
+    };
+    chat.messages.push(userMessage);
 
     // If @nexus is mentioned, get Gemini response
     let aiResponse = null;
     if (message.includes("@nexus")) {
       const question = message.split("@nexus")[1].trim();
-      const user = await User.findById(sender).select("name");
       const agentId = `study_${groupId}_${topic.replace(/\s+/g, '_')}`;
       aiResponse = await getGeminiResponse(
         question,
         agentId,
         null,
-        user.name
+        senderUser.name
       );
       chat.messages.push({
         sender: null,
@@ -225,20 +231,36 @@ export const handleStudyChat = async (req, res) => {
       // Only user message was just added
       newMessages = [chat.messages[chat.messages.length - 1]];
     }
-    const populatedMessages = await Promise.all(
-      newMessages.map(async (msg) => {
-        if (msg.sender) {
-          const user = await User.findById(msg.sender).select("name");
-          return { ...msg.toObject(), sender: { name: user?.name || "" } };
-        }
-        return { ...msg.toObject() };
-      })
-    );
+
+    // Format messages with proper sender information
+    const populatedMessages = newMessages.map(msg => {
+      if (msg.sender) {
+        // User message
+        return {
+          ...msg.toObject(),
+          sender: {
+            _id: senderUser._id,
+            name: senderUser.name,
+            profilePic: senderUser.profilePic || "/avatar.png"
+          }
+        };
+      } else {
+        // AI message
+        return {
+          ...msg.toObject(),
+          sender: {
+            name: "Nexus AI",
+            profilePic: "https://www.gravatar.com/avatar/?d=mp"
+          }
+        };
+      }
+    });
 
     io.to(`studychat:${groupId}:${topic}`).emit("newStudyChatMessages", populatedMessages);
 
     res.json({ message: aiResponse });
   } catch (error) {
+    console.error("Error in handleStudyChat:", error);
     res.status(500).json({ error: "Failed to process study chat message" });
   }
 };
@@ -274,11 +296,13 @@ export const initializeStudySessionAgent = async (req, res) => {
     // Check if chat already exists and has messages
     let chat = await StudySessionChat.findOne({ groupId, topic });
     if (chat && chat.messages.length > 0) {
-      return res.status(200).json({ alreadyInitialized: true, messages: chat.messages });
+      return res.status(200).json({ alreadyInitialized: true, messages: chat.messages, quiz: chat.quiz });
     }
 
     // Create a lock for this chat initialization
     const lockKey = `chat_init_${groupId}_${topic}`;
+    
+    // Check if chat is being initialized by another request
     const isLocked = await StudySessionChat.findOne({ 
       groupId, 
       topic,
@@ -314,14 +338,14 @@ export const initializeStudySessionAgent = async (req, res) => {
       chat.aiContext = aiContext;
     }
 
-    // // Add a temporary message to indicate initialization is in progress
-    // chat.messages.push({
-    //   sender: null,
-    //   role: "assistant",
-    //   content: "# Initializing study materials...",
-    //   timestamp: new Date()
-    // });
-    // await chat.save();
+    // Add a temporary message to indicate initialization is in progress
+    chat.messages.push({
+      sender: null,
+      role: "assistant",
+      content: "# Initializing study materials...",
+      timestamp: new Date()
+    });
+    await chat.save();
 
     // Fetch PDF buffers for the group
     const pdfBuffers = await getPdfBuffersForGroup(group);
@@ -366,16 +390,23 @@ export const initializeStudySessionAgent = async (req, res) => {
 
     const quizResponse = await getGeminiResponse(quizPrompt, agentId, memberNames);
     let quiz;
+    
     try {
-      quiz = JSON.parse(quizResponse);
-    } catch (err) {
-      // Try to extract JSON from the response
       const jsonStr = extractJsonFromString(quizResponse);
       if (jsonStr) {
         quiz = JSON.parse(jsonStr);
       } else {
         throw new Error("Failed to parse quiz JSON");
       }
+    } catch (error) {
+      console.error("Error parsing quiz JSON:", error);
+      // If quiz generation fails, still return the lesson but without a quiz
+      await chat.save();
+      return res.status(201).json({ 
+        initialized: true, 
+        messages: chat.messages,
+        quiz: null 
+      });
     }
 
     // Store the quiz in the chat document

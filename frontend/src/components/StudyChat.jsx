@@ -254,16 +254,21 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         return;
       }
       
-      const isCurrentUser = message.role === "user";
-      const senderName = isCurrentUser ? authUser.name : "Nexus AI";
-      const senderProfilePic = isCurrentUser ? authUser.profilePic : "https://www.gravatar.com/avatar/?d=mp";
+      // Use the actual sender information from the message
+      const isCurrentUser = message.sender?._id === authUser._id;
+      const senderName = message.sender?.name || (message.role === "assistant" ? "Nexus AI" : "Unknown");
+      const senderProfilePic = message.sender?.profilePic || (message.role === "assistant" ? "https://www.gravatar.com/avatar/?d=mp" : "/avatar.png");
       
       // Create a new group if:
       // 1. No current group exists
       // 2. Current message is from a different sender
-      if (!currentGroup || currentGroup.sender.name !== senderName) {
+      if (!currentGroup || currentGroup.sender._id !== message.sender?._id) {
         currentGroup = {
-          sender: { name: senderName, profilePic: senderProfilePic },
+          sender: { 
+            _id: message.sender?._id,
+            name: senderName,
+            profilePic: senderProfilePic
+          },
           messages: [message],
           date: new Date(),
           isCurrentUser
@@ -346,11 +351,25 @@ const StudyChat = ({ topic, groupId, onClose }) => {
             <div className="flex items-start gap-3 w-full">
               {/* Avatar */}
               <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mt-0.5 border border-neutral-600">
-                <img
-                  src={group.sender.profilePic || "/avatar.png"}
-                  alt={group.sender.name}
-                  className="w-full h-full object-cover"
-                />
+                {group.sender.profilePic ? (
+                  <img
+                    src={group.sender.profilePic}
+                    alt={group.sender.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      if (e.target instanceof HTMLImageElement) {
+                        e.target.onerror = null;
+                        e.target.src = "/avatar.png";
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-neutral-700 flex items-center justify-center">
+                    <span className="text-neutral-200 text-sm">
+                      {group.sender.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Messages */}
@@ -386,6 +405,12 @@ const StudyChat = ({ topic, groupId, onClose }) => {
                   src="https://www.gravatar.com/avatar/?d=mp"
                   alt="Nexus AI"
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    if (e.target instanceof HTMLImageElement) {
+                      e.target.onerror = null;
+                      e.target.src = "/avatar.png";
+                    }
+                  }}
                 />
               </div>
               <div className="flex-1 min-w-0">
