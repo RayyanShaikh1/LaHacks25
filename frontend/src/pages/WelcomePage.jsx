@@ -89,9 +89,11 @@ const WelcomePage = () => {
             <span className="text-[#c8c8ff]">.</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-lg leading-relaxed">
-            Your AI-powered study companion. Transform the way you learn with 
+            {/* Your AI-powered study companion. Transform the way you learn with 
             intelligent note-taking, collaborative study sessions, and 
-            personalized learning paths.
+            personalized learning paths. */}
+            take notes, organize study sessions, and get personalized learning paths
+            with the power of AI.<br />nexus is your ultimate study companion, designed to help you learn smarter, not harder.
           </p>
           <motion.button
             whileHover={{ scale: 1.02 }}

@@ -48,7 +48,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
           <h2 className="text-xl font-semibold text-white">Create a Group</h2>
           <button
             onClick={onClose}
-            className="text-[#c8c8ff]/70 hover:text-white transition-colors"
+            className="text-[#c8c8ff]/70 hover:text-[#7142dd] transition-colors"
           >
             <X size={20} />
           </button>
@@ -56,7 +56,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-[#c8c8ff] mb-2">
+            <label className="block text-sm font-medium text-[#7142dd] mb-2">
               Group Name
             </label>
             <input
@@ -69,7 +69,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-[#c8c8ff] mb-2">
+            <label className="block text-sm font-medium text-[#7142dd] mb-2">
               Select Members
             </label>
             <div className="max-h-48 overflow-y-auto bg-white/5 rounded-md p-2 border border-white/10">
@@ -96,7 +96,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
                     </div>
                     <span className="text-white">{user.name}</span>
                     {selectedUsers.includes(user._id) ? (
-                      <Check className="ml-auto text-[#c8c8ff]" size={16} />
+                      <Check className="ml-auto text-[#7142dd]" size={16} />
                     ) : (
                       <Plus className="ml-auto text-[#c8c8ff]/50" size={16} />
                     )}
@@ -110,13 +110,13 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-[#c8c8ff] hover:text-white transition-colors"
+              className="px-4 py-2 text-white hover:text-[#7142dd] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-neutral-900 hover:bg-[#0a0a45] text-white rounded-md transition-colors border border-white/20"
+              className="px-4 py-2 bg-neutral-900 hover:bg-[#7142dd] text-white rounded-md transition-colors border border-white/20"
             >
               Create Group
             </button>
