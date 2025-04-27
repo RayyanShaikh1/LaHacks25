@@ -238,7 +238,8 @@ Guidelines:
     }
   ]
 }
-6. Return only the JSON object, with no extra commentary or explanation.
+6. Keep each lesson and module title under 40 characters.
+7. Return only the JSON object, with no extra commentary or explanation.
 `;
 
 // Helper to extract JSON from a string
