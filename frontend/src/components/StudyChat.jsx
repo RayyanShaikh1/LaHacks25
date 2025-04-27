@@ -109,6 +109,11 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     setQuiz({ ...quiz, responses: updatedResponses });
   };
 
+  const handleRetakeQuiz = () => {
+    setReviewAnswers(null);
+    setShowQuiz(true);
+  };
+
   return (
     <div className="flex flex-col h-full bg-neutral-800 border-l border-neutral-700">
       {/* Header */}
@@ -126,14 +131,24 @@ const StudyChat = ({ topic, groupId, onClose }) => {
             </button>
           )}
           {quiz && hasCompletedQuiz && (
-            <button
-              onClick={handleReviewQuiz}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600 text-white 
-                       hover:bg-green-700 transition-colors text-sm font-medium"
-            >
-              <Eye size={16} />
-              Review Quiz
-            </button>
+            <>
+              <button
+                onClick={handleReviewQuiz}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-600 text-white 
+                         hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                <Eye size={16} />
+                Review Quiz
+              </button>
+              <button
+                onClick={handleRetakeQuiz}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white 
+                         hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                <BookOpen size={16} />
+                Retake Quiz
+              </button>
+            </>
           )}
           <button 
             onClick={onClose}
