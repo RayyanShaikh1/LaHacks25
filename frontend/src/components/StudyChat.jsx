@@ -287,8 +287,8 @@ const StudyChat = ({ topic, groupId, onClose }) => {
           {quiz && !hasCompletedQuiz && (
             <button
               onClick={handleTakeQuiz}
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-blue-600 text-white 
-                       hover:bg-blue-700 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#7142dd52] text-white 
+                       hover:bg-[#7142dd] transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
             >
               <BookOpen size={14} className="hidden sm:block" />
               Take Quiz
@@ -306,8 +306,8 @@ const StudyChat = ({ topic, groupId, onClose }) => {
               </button>
               <button
                 onClick={handleRetakeQuiz}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-blue-600 text-white 
-                         hover:bg-blue-700 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#7142dd52] text-white 
+                         hover:bg-[#7142dd] transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
               >
                 <BookOpen size={14} className="hidden sm:block" />
                 Retake

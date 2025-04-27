@@ -92,7 +92,7 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
               {/* Progress bar */}
               <div className="w-full bg-neutral-700 rounded-full h-2 mb-4">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-[#7142dd52] h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((currentQuestionIndex + 1) / quiz.questions.length) * 100}%` }}
                 />
               </div>
@@ -113,7 +113,7 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
                     onClick={() => handleAnswerSelect(index)}
                     className={`w-full p-4 rounded-lg text-left transition-colors ${
                       selectedAnswers[currentQuestionIndex] === index
-                        ? "bg-blue-600 text-white"
+                        ? "bg-[#7142dd52] text-white"
                         : "bg-neutral-700 text-neutral-200 hover:bg-neutral-600"
                     }`}
                     disabled={isReviewMode}
@@ -128,13 +128,13 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
                 <button
                   onClick={handlePrevious}
                   disabled={currentQuestionIndex === 0}
-                  className="px-4 py-2 rounded-lg bg-neutral-700 text-neutral-200 disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 transition-colors text-neutral-200 disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
                   onClick={handleNext}
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+                  className="px-4 py-2 rounded-lg bg-[#7142dd52] hover:bg-[#7142dd] transition-colors text-white"
                 >
                   {currentQuestionIndex === quiz.questions.length - 1
                     ? "Submit"
@@ -180,7 +180,7 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
                 {!isReviewMode && (
                   <button
                     onClick={handleRetake}
-                    className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+                    className="px-4 py-2 rounded-lg bg-[#7142dd52] hover:bg-[#7142dd] transition-colors text-white"
                   >
                     Retake Quiz
                   </button>
