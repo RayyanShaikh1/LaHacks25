@@ -11,6 +11,9 @@ const io = new Server(server, {
   },
 });
 
+// Make io available to the Express app
+app.set('io', io);
+
 export function getReceiverSocketId(userId) {
   return userSocketMap[userId];
 }
@@ -33,6 +36,14 @@ io.on("connection", (socket) => {
   });
   socket.on("leaveStudyChat", ({ groupId, topic }) => {
     socket.leave(`studychat:${groupId}:${topic}`);
+  });
+
+  // Group room handling
+  socket.on("joinGroup", (groupId) => {
+    socket.join(groupId);
+  });
+  socket.on("leaveGroup", (groupId) => {
+    socket.leave(groupId);
   });
 
   socket.on("disconnect", () => {

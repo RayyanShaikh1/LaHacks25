@@ -6,7 +6,7 @@ import { BookOpen, Trophy, Users } from "lucide-react";
 
 const GroupSidebar = () => {
   const { isSidebarOpen, selectedGroup } = useChatStore();
-  const { authUser } = useAuthStore();
+  const { authUser, socket } = useAuthStore();
   const [skills, setSkills] = useState([]);
 
   useEffect(() => {
@@ -21,6 +21,62 @@ const GroupSidebar = () => {
     };
     fetchSkills();
   }, [selectedGroup]);
+
+  // Listen for real-time quiz completion updates
+  useEffect(() => {
+    if (!socket || !selectedGroup) return;
+
+    console.log('Joining group room:', selectedGroup._id);
+    // Join the group's room for real-time updates
+    socket.emit('joinGroup', selectedGroup._id);
+
+    // Listen for quiz completion events
+    const handleQuizCompleted = (data) => {
+      console.log('Received quizCompleted event:', data);
+      setSkills(prevSkills => {
+        const updatedSkills = prevSkills.map(skill => {
+          if (skill.topic === data.topic) {
+            console.log('Updating skill:', skill.topic);
+            // Update or add the user's score for this topic
+            const updatedUserScores = [...(skill.userScores || [])];
+            const existingUserIndex = updatedUserScores.findIndex(
+              userScore => userScore.user._id === data.user._id
+            );
+
+            if (existingUserIndex >= 0) {
+              // Update existing user's score
+              updatedUserScores[existingUserIndex] = {
+                ...updatedUserScores[existingUserIndex],
+                score: data.score
+              };
+            } else {
+              // Add new user's score
+              updatedUserScores.push({
+                user: data.user,
+                score: data.score
+              });
+            }
+
+            return {
+              ...skill,
+              userScores: updatedUserScores
+            };
+          }
+          return skill;
+        });
+        console.log('Updated skills:', updatedSkills);
+        return updatedSkills;
+      });
+    };
+
+    socket.on('quizCompleted', handleQuizCompleted);
+
+    return () => {
+      console.log('Leaving group room:', selectedGroup._id);
+      socket.emit('leaveGroup', selectedGroup._id);
+      socket.off('quizCompleted', handleQuizCompleted);
+    };
+  }, [socket, selectedGroup]);
 
   if (!isSidebarOpen) return null;
 

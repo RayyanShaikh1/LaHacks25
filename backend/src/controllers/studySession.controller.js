@@ -412,22 +412,36 @@ export const saveQuizResponse = async (req, res) => {
     await chat.save();
 
     // Get the user's name for the quiz results
-    const user = await User.findById(userId).select("name");
+    const user = await User.findById(userId).select("name profilePic");
     
+    // Calculate score for real-time update
+    const correctAnswers = chat.quiz.questions.reduce((acc, question, index) => {
+      return acc + (answers[index] === question.correct ? 1 : 0);
+    }, 0);
+    const score = Math.round((correctAnswers / chat.quiz.questions.length) * 100);
+
+    // Emit socket event for real-time skills update
+    io.to(groupId).emit('quizCompleted', {
+      topic,
+      user: {
+        _id: user._id,
+        name: user.name,
+        profilePic: user.profilePic
+      },
+      score
+    });
+
     // Format quiz results for Gemini
     let quizResults = `Quiz Results for Topic: ${topic}\n\n`;
-    let correctAnswers = 0;
     
     chat.quiz.questions.forEach((q, index) => {
       const isCorrect = answers[index] === q.correct;
-      if (isCorrect) correctAnswers++;
       quizResults += `Question ${index + 1}: ${q.question}\n`;
       quizResults += `Correct Answer: ${q.options[q.correct]}\n`;
       quizResults += `${user.name}'s Answer: ${q.options[answers[index]]} (${isCorrect ? 'Correct' : 'Incorrect'})\n\n`;
     });
 
-    const score = (correctAnswers / chat.quiz.questions.length) * 100;
-    quizResults += `Overall Score: ${score.toFixed(0)}%\n`;
+    quizResults += `Overall Score: ${score}%\n`;
 
     // Get the group to access study materials
     const group = await Group.findById(groupId);
@@ -508,4 +522,4 @@ export const getSkillsMetrics = async (req, res) => {
     console.error("Error in getSkillsMetrics:", error);
     res.status(500).json({ error: "Failed to get skills metrics" });
   }
-}; 
+};
