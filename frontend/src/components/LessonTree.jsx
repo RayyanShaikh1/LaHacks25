@@ -19,7 +19,7 @@ const isOverlapping = (x, y, nodeSize, existingNodes, minDistance) => {
 
 function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
   const SPACING = 40; // Reduced minimum space between nodes
-  const moduleRadius = 400; // Reduced base radius for closer nodes
+  const moduleRadius = 300; // Reduced base radius for closer nodes
   
   // Course node (unchanged)
   const courseId = "root";
@@ -58,7 +58,7 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
     // Try to find a position without overlap
     do {
       const angle = (i * 2 * Math.PI / courseData.modules.length) + (Math.random() * 0.5 - 0.25);
-      const radius = moduleRadius + (Math.random() * 200); // Reduced random radius
+      const radius = moduleRadius + (Math.random() * 100); // Reduced random radius
       moduleX = x + radius * Math.cos(angle);
       moduleY = y + radius * Math.sin(angle);
       attempts++;
@@ -99,6 +99,8 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
         stroke: '#8b5cf6',
         strokeWidth: 3,
         opacity: 0.6,
+        strokeDasharray: '5,5',
+        animation: 'electric 1s linear infinite',
       },
       animated: true,
       animationSpeed: 0.5,
@@ -153,6 +155,8 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
           stroke: '#8b5cf6',
           strokeWidth: 2,
           opacity: 0.4,
+          strokeDasharray: '5,5',
+          animation: 'electric 1s linear infinite',
         },
         animated: true,
         animationSpeed: 0.3,
@@ -168,6 +172,30 @@ const LessonTreeInner = ({ lessonJson, onNodeClick }) => {
     if (!lessonJson || !lessonJson.course) return { nodes: [], edges: [] };
     return buildTreeNodesEdges(lessonJson, 0, 0);
   }, [lessonJson]);
+
+  // Add keyframes for electric animation
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes electric {
+        0% {
+          stroke-dashoffset: 0;
+          filter: drop-shadow(0 0 2px #8b5cf6);
+        }
+        50% {
+          filter: drop-shadow(0 0 8px #8b5cf6);
+        }
+        100% {
+          stroke-dashoffset: -10;
+          filter: drop-shadow(0 0 2px #8b5cf6);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   const { zoomIn, zoomOut, fitView } = useReactFlow();
 
