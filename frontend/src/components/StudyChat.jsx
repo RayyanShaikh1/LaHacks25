@@ -165,7 +165,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
                 <div className="text-xs font-semibold mb-1 text-blue-200">{msg.sender.name}</div>
               )}
               {msg.role === "assistant" && (
-                <div className="text-xs font-semibold mb-1 text-green-200">AI Assistant</div>
+                <div className="text-xs font-semibold mb-1 text-green-200">Nexus AI</div>
               )}
               {/* Render markdown for all messages */}
               <MarkdownMessage content={msg.content} />
