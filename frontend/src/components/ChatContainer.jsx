@@ -96,37 +96,43 @@ const ChatContainer = () => {
               </div>
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-neutral-400">
-                <h2 className="text-2xl font-bold text-neutral-200 mb-8">Get Started</h2>
-                
-                {/* Action Buttons Grid */}
-                <div className="grid grid-cols-2 gap-4 max-w-2xl">
-                  <ActionButton
-                    icon={<PenLine className="w-5 h-5 text-purple-400" />}
-                    label="How can I improve?"
-                    onClick={() => {}}
-                  />
-                  <ActionButton
-                    icon={<Lightbulb className="w-5 h-5 text-yellow-400" />}
-                    label="What should I study?"
-                    onClick={() => {}}
-                  />
-                  <ActionButton
-                    icon={<BarChart2 className="w-5 h-5 text-blue-400" />}
-                    label="Analyze my weaknesses"
-                    onClick={() => {}}
-                  />
-                  <ActionButton
-                    icon={<Eye className="w-5 h-5 text-green-400" />}
-                    label="Analyze images or notes"
-                    onClick={() => {}}
-                  />
-                </div>
-                
-                {/* <p className="text-sm mt-8">
-                  {selectedGroup 
-                    ? "Click the Layout icon in the top right to open the Study Session Overlay"
-                    : "Start the conversation!"}
-                </p> */}
+                {selectedGroup ? (
+                  <>
+                    <h2 className="text-2xl font-bold text-neutral-200 mb-8">Get Started</h2>
+                    
+                    {/* Action Buttons Grid */}
+                    <div className="grid grid-cols-2 gap-4 max-w-2xl">
+                      <ActionButton
+                        icon={<PenLine className="w-5 h-5 text-purple-400" />}
+                        label="How can I improve?"
+                        onClick={() => {}}
+                      />
+                      <ActionButton
+                        icon={<Lightbulb className="w-5 h-5 text-yellow-400" />}
+                        label="What should I study?"
+                        onClick={() => {}}
+                      />
+                      <ActionButton
+                        icon={<BarChart2 className="w-5 h-5 text-blue-400" />}
+                        label="Analyze my weaknesses"
+                        onClick={() => {}}
+                      />
+                      <ActionButton
+                        icon={<Eye className="w-5 h-5 text-green-400" />}
+                        label="Analyze images or notes"
+                        onClick={() => {}}
+                      />
+                    </div>
+                    
+                    <p className="text-sm mt-8">
+                      Click the Layout icon in the top right to open the Study Session Overlay
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-lg text-neutral-200">
+                    Try @nexus to start a conversation
+                  </p>
+                )}
               </div>
             ) : (
               groupedMessages.map((group, groupIndex) => {
