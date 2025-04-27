@@ -93,3 +93,9 @@
 .katex {
   @apply text-neutral-200;
 }
+
+@layer components {
+  .nexus-gradient {
+    @apply bg-gradient-to-br from-[#340738] via-[#470952] to-[#0a0a45];
+  }
+}
