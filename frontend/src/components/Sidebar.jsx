@@ -67,13 +67,13 @@ const Sidebar = () => {
   );
 
   return (
-    <div className={`relative flex flex-col h-full shadow-lg border-r border-neutral-700 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-80'}`}>
+    <div className={`relative flex flex-col h-full shadow-lg border-r border-neutral-700 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-80'} bg-neutral-900/95`}>
       {/* Logo and App Name */}
-      <div className={`px-4 ${isSidebarCollapsed ? 'py-8' : 'py-5'} flex items-center justify-center border-b border-neutral-700 relative`}>
+      <div className={`px-4 ${isSidebarCollapsed ? 'py-8' : 'py-4.5'} flex items-center justify-center border-b border-neutral-700/50 relative bg-[#6f066f]/5`}>
         {/* Collapse Toggle Button */}
         <button
           onClick={toggleSidebarCollapse}
-          className="absolute right-4 p-1 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
+          className="absolute right-4 p-1 rounded-full hover:bg-[#6f066f]/20 text-neutral-400 hover:text-neutral-200 transition-colors"
           style={{ top: "50%", transform: "translateY(-50%)" }}
         >
           {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -86,7 +86,7 @@ const Sidebar = () => {
         <button
           className={`flex-1 py-2 rounded-lg flex items-center justify-center transition-all ${
             activeTab === "groups"
-              ? "bg-neutral-700 text-neutral-200 font-medium"
+              ? "bg-[#6f066f]/20 text-neutral-200 font-medium"
               : "text-neutral-400 hover:bg-neutral-700/50"
           } ${isSidebarCollapsed ? 'w-full h-10' : ''}`}
           onClick={() => setActiveTab("groups")}
@@ -99,7 +99,7 @@ const Sidebar = () => {
         <button
           className={`flex-1 py-2 rounded-lg flex items-center justify-center transition-all ${
             activeTab === "direct"
-              ? "bg-neutral-700 text-neutral-200 font-medium"
+              ? "bg-[#6f066f]/20 text-neutral-200 font-medium"
               : "text-neutral-400 hover:bg-neutral-700/50"
           } ${isSidebarCollapsed ? 'w-full h-10' : ''}`}
           onClick={() => setActiveTab("direct")}
@@ -122,7 +122,7 @@ const Sidebar = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-neutral-700/50 text-neutral-200 rounded-lg px-3 py-2 pl-9 focus:outline-none focus:ring-2 focus:ring-neutral-500/30 text-sm border border-neutral-600"
+              className="w-full bg-neutral-700/50 text-neutral-200 rounded-lg px-3 py-2 pl-9 focus:outline-none focus:ring-2 focus:ring-[#6f066f]/30 text-sm border border-neutral-600"
               placeholder="Search..."
             />
             {searchTerm && (
@@ -152,7 +152,7 @@ const Sidebar = () => {
                   />
                   <div
                     className={`w-8 h-4 rounded-full transition-colors ${
-                      showOnlineOnly ? "bg-neutral-700" : "bg-neutral-600"
+                      showOnlineOnly ? "bg-[#6f066f]/20" : "bg-neutral-600"
                     }`}
                   ></div>
                   <div
@@ -211,7 +211,7 @@ const Sidebar = () => {
                   key={user._id}
                   className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'} p-2 rounded-lg cursor-pointer ${
                     selectedUser?._id === user._id
-                      ? "bg-neutral-700/70"
+                      ? "bg-[#6f066f]/20 text-neutral-200"
                       : "hover:bg-neutral-700/40"
                   }`}
                   onClick={() => setSelectedUser(user)}
@@ -253,7 +253,7 @@ const Sidebar = () => {
                   key={group._id}
                   className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-3'} p-2 rounded-lg cursor-pointer ${
                     selectedGroup?._id === group._id
-                      ? "bg-neutral-700/70"
+                      ? "bg-[#6f066f]/20"
                       : "hover:bg-neutral-700/40"
                   }`}
                   onClick={() => setSelectedGroup(group)}
