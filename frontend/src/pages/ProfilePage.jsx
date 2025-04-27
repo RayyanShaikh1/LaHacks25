@@ -269,7 +269,7 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#070738] via-[#090952] to-[#0a0a45] z-0" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#340738] via-[#470952] to-[#0a0a45] z-0" />
       
       {/* Animated stars */}
       <ParticleBackground />
