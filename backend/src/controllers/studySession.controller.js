@@ -469,38 +469,37 @@ export const saveQuizResponse = async (req, res) => {
 export const getSkillsMetrics = async (req, res) => {
   try {
     const { groupId } = req.params;
-    const userId = req.user._id;
 
     // Get all study session chats for this group
     const chats = await StudySessionChat.find({ groupId })
       .select('topic quiz')
-      .populate('quiz.responses.user', 'name');
+      .populate('quiz.responses.user', 'name profilePic');
 
-    // Calculate skills metrics
+    // Calculate skills metrics for all users
     const skills = chats.map(chat => {
       if (!chat.quiz || !chat.quiz.responses) return null;
 
-      // Find the user's response
-      const userResponse = chat.quiz.responses.find(
-        resp => resp.user._id.toString() === userId.toString()
-      );
+      // Calculate scores for all users who have responded
+      const userScores = chat.quiz.responses.map(response => {
+        const totalQuestions = chat.quiz.questions.length;
+        const correctAnswers = chat.quiz.questions.reduce((acc, question, index) => {
+          return acc + (response.answers[index] === question.correct ? 1 : 0);
+        }, 0);
 
-      if (!userResponse) return null;
+        const score = Math.round((correctAnswers / totalQuestions) * 100);
 
-      // Calculate score
-      const totalQuestions = chat.quiz.questions.length;
-      const correctAnswers = chat.quiz.questions.reduce((acc, question, index) => {
-        return acc + (userResponse.answers[index] === question.correct ? 1 : 0);
-      }, 0);
-
-      const score = Math.round((correctAnswers / totalQuestions) * 100);
+        return {
+          user: response.user,
+          score,
+          totalQuestions,
+          correctAnswers,
+          completedAt: response.completed ? new Date() : null
+        };
+      });
 
       return {
         topic: chat.topic,
-        score,
-        totalQuestions,
-        correctAnswers,
-        completedAt: userResponse.completed ? new Date() : null
+        userScores
       };
     }).filter(skill => skill !== null);
 

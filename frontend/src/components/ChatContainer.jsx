@@ -83,8 +83,16 @@ const ChatContainer = () => {
               </div>
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-neutral-400">
-                <p className="text-lg">No messages yet</p>
-                <p className="text-sm">Start the conversation!</p>
+                <p className="text-lg">
+                  {selectedGroup 
+                    ? "No messages yet"
+                    : "No messages yet"}
+                </p>
+                <p className="text-sm">
+                  {selectedGroup 
+                    ? "Click the Layout icon in the top right to open the Study Session Overlay"
+                    : "Start the conversation!"}
+                </p>
               </div>
             ) : (
               groupedMessages.map((group, groupIndex) => {

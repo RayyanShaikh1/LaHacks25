@@ -64,14 +64,7 @@ const ChatHeader = () => {
         {selectedGroup && (
           <>
             <button 
-              onClick={() => {
-                if (isOverlayOpen) {
-                  toggleOverlay();
-                }
-                if (!isSidebarOpen) {
-                  toggleSidebar();
-                }
-              }}
+              onClick={toggleSidebar}
               className={`p-2 rounded-full ${isSidebarOpen ? 'bg-neutral-700 text-neutral-200' : 'hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200'} transition-colors`}
               title="Toggle Sidebar"
             >

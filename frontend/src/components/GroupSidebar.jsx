@@ -2,7 +2,7 @@ import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
-import { BookOpen, Trophy } from "lucide-react";
+import { BookOpen, Trophy, Users } from "lucide-react";
 
 const GroupSidebar = () => {
   const { isSidebarOpen, selectedGroup } = useChatStore();
@@ -31,26 +31,43 @@ const GroupSidebar = () => {
         
         {/* Skills Section */}
         <div className="mt-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Trophy size={18} className="text-yellow-500" />
-            <h3 className="text-md font-medium text-neutral-200">Topics</h3>
-          </div>
-          
           {skills.length === 0 ? (
             <p className="text-sm text-neutral-400">No quiz data available yet</p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {skills.map((skill) => (
-                <div key={skill.topic} className="space-y-2">
+                <div key={skill.topic} className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-200">{skill.topic}</span>
-                    <span className="text-sm text-neutral-400">{skill.score}%</span>
+                    <span className="text-sm font-medium text-neutral-200">{skill.topic}</span>
                   </div>
-                  <div className="w-full bg-neutral-700 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${skill.score}%` }}
-                    />
+                  
+                  {/* Members' Progress */}
+                  <div className="space-y-2">
+                    {skill.userScores && skill.userScores.length > 0 ? (
+                      skill.userScores.map((userScore) => (
+                        <div key={userScore.user._id} className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full overflow-hidden">
+                              <img
+                                src={userScore.user.profilePic || "/avatar.png"}
+                                alt={userScore.user.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <span className="text-xs text-neutral-400">{userScore.user.name}</span>
+                            <span className="text-xs text-neutral-400 ml-auto">{userScore.score}%</span>
+                          </div>
+                          <div className="w-full bg-neutral-700 rounded-full h-1.5">
+                            <div 
+                              className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                              style={{ width: `${userScore.score}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-neutral-400">No quiz responses yet</p>
+                    )}
                   </div>
                 </div>
               ))}
