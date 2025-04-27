@@ -298,8 +298,8 @@ const StudyChat = ({ topic, groupId, onClose }) => {
             <>
               <button
                 onClick={handleReviewQuiz}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-green-600 text-white 
-                         hover:bg-green-700 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-gray-600 text-white 
+                         hover:bg-gray-700 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
               >
                 <Eye size={14} className="hidden sm:block" />
                 Review
