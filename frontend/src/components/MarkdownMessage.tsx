@@ -14,6 +14,9 @@ interface MarkdownMessageProps {
 }
 
 const MarkdownMessage: React.FC<MarkdownMessageProps> = ({ content }) => {
+  // Process content to highlight @nexus mentions
+  const processedContent = content.replace(/@nexus/g, '**@nexus**');
+
   return (
     <div className="markdown-content text-neutral-200">
       <ReactMarkdown
@@ -71,9 +74,18 @@ const MarkdownMessage: React.FC<MarkdownMessageProps> = ({ content }) => {
 
           // Style paragraphs
           p: ({ ...props }) => <p className="mb-4 last:mb-0" {...props} />,
+
+          // Style strong text (used for @nexus mentions)
+          strong: ({ children, ...props }) => {
+            const text = children?.toString() || '';
+            if (text === '@nexus') {
+              return <span className="nexus-mention" {...props}>{children}</span>;
+            }
+            return <strong {...props}>{children}</strong>;
+          },
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );

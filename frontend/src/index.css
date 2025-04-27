@@ -85,6 +85,17 @@
   @apply text-blue-400 hover:text-blue-300 underline;
 }
 
+/* Style for @nexus mentions */
+.nexus-mention {
+  color: #a081e9;
+  font-weight: 600;
+  background-color: #7142dd52;
+  padding: 0 p;
+  padding-right: 2px;
+  padding-left: 2px;
+  border-radius: 3px;
+}
+
 /* KaTeX math styles */
 .katex-display {
   @apply my-4 overflow-x-auto;

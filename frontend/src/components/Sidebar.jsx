@@ -159,61 +159,28 @@ const Sidebar = () => {
         </div>
       )}
 
-      {/* Online Toggle and Add Buttons */}
-      {!isSidebarCollapsed && (
-        <div className="px-4 py-2">
-          <div className="flex items-center justify-between">
-            {activeTab === "direct" && (
-              <label className="flex items-center gap-2 text-sm text-neutral-400 cursor-pointer group">
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={showOnlineOnly}
-                    onChange={() => setShowOnlineOnly(!showOnlineOnly)}
-                    className="sr-only"
-                  />
-                  <div
-                    className={`w-8 h-4 rounded-full transition-colors ${
-                      showOnlineOnly ? "bg-[#7142dd52]" : "bg-neutral-600"
-                    }`}
-                  ></div>
-                  <div
-                    className={`absolute top-0 left-0 w-4 h-4 rounded-full transition-transform transform ${
-                      showOnlineOnly ? "translate-x-4 bg-neutral-200" : "bg-neutral-200"
-                    }`}
-                  ></div>
-                </div>
-                <span>Online only</span>
-              </label>
-            )}
-            <div className="ml-auto">
-              {activeTab === "direct" && (
-                <button
-                  className="p-2 rounded-lg bg-neutral-700/50 text-neutral-400 hover:text-neutral-200 transition-colors"
-                  onClick={() => setShowStartConversationModal(true)}
-                >
-                  <UserPlus size={16} />
-                </button>
-              )}
-              {activeTab === "groups" && (
-                <button
-                  className="p-2 rounded-lg bg-neutral-700/50 text-neutral-400 hover:text-neutral-200 transition-colors"
-                  onClick={() => setShowCreateGroupModal(true)}
-                >
-                  <Plus size={16} />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Section Header */}
+      {/* Section Header with Add Button */}
       {!isSidebarCollapsed && (
         <div className="px-4 pt-2 pb-1 flex items-center justify-between">
-          <h3 className="text-xs uppercase tracking-wider font-semibold text-neutral-500">
+          <h3 className="text-sm uppercase tracking-wider font-semibold text-neutral-500">
             {activeTab === "direct" ? "Conversations" : "Your Groups"}
           </h3>
+          {activeTab === "direct" && (
+            <button
+              className="p-2 rounded-lg bg-neutral-700/50 text-neutral-400 hover:text-neutral-200 transition-colors"
+              onClick={() => setShowStartConversationModal(true)}
+            >
+              <UserPlus size={16} />
+            </button>
+          )}
+          {activeTab === "groups" && (
+            <button
+              className="p-2 rounded-lg bg-neutral-700/50 text-neutral-400 hover:text-neutral-200 transition-colors"
+              onClick={() => setShowCreateGroupModal(true)}
+            >
+              <Plus size={16} />
+            </button>
+          )}
         </div>
       )}
 
