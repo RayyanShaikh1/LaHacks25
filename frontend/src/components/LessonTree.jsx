@@ -1,28 +1,84 @@
 import React, { useMemo, useCallback } from "react";
 import ReactFlow, { Controls, Background, useReactFlow, ReactFlowProvider } from "react-flow-renderer";
 
-// Add these helper functions at the top
+// Enhanced distance and overlap detection
 const getDistance = (x1, y1, x2, y2) => {
   return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 };
 
-const isOverlapping = (x, y, nodeSize, existingNodes, minDistance) => {
+// Improved overlap detection that accounts for actual node dimensions
+const isOverlapping = (x, y, nodeWidth, nodeHeight, existingNodes, minDistance) => {
+  // Convert to actual dimensions rather than radius
+  const nodeHalfWidth = nodeWidth / 2;
+  const nodeHalfHeight = nodeHeight / 2;
+  
   for (const node of existingNodes) {
+    // Get the dimensions from node style or use default values
+    const existingWidth = parseFloat(node.style?.width || 100);
+    const existingHeight = parseFloat(node.style?.height || 100);
+    const existingHalfWidth = existingWidth / 2;
+    const existingHalfHeight = existingHeight / 2;
+    
+    // Calculate center-to-center distance
     const distance = getDistance(x, y, node.position.x, node.position.y);
-    const combinedSize = (nodeSize + parseFloat(node.style?.width || 0)) / 2;
-    if (distance < combinedSize + minDistance) {
+    
+    // Calculate minimum non-overlapping distance based on actual dimensions
+    // Add minDistance as padding between nodes
+    const minNonOverlapDistance = nodeHalfWidth + existingHalfWidth + minDistance;
+    
+    // Check for overlap
+    if (distance < minNonOverlapDistance) {
       return true;
     }
   }
   return false;
 };
 
-function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
-  const SPACING = 40; // Reduced minimum space between nodes
-  const moduleRadius = 300; // Reduced base radius for closer nodes
+// Find a valid position with spiral search if initial position causes overlap
+const findNonOverlappingPosition = (baseX, baseY, nodeWidth, nodeHeight, existingNodes, minDistance) => {
+  // Try original position first
+  if (!isOverlapping(baseX, baseY, nodeWidth, nodeHeight, existingNodes, minDistance)) {
+    return { x: baseX, y: baseY };
+  }
   
-  // Course node (unchanged)
+  // If original position overlaps, try spiral search pattern
+  // This is more systematic than random attempts
+  const spiralFactor = Math.max(nodeWidth, nodeHeight) + minDistance;
+  const spiralStep = 0.15; // Smaller step for tighter spiral (was 0.2 implicitly)
+  const maxIterations = 100; // Prevent infinite loops
+  
+  for (let i = 0; i < maxIterations; i++) {
+    // Spiral outward with tighter increments
+    const angle = 0.5 * i;
+    const radius = spiralFactor * (1 + spiralStep * i);
+    
+    const newX = baseX + radius * Math.cos(angle);
+    const newY = baseY + radius * Math.sin(angle);
+    
+    if (!isOverlapping(newX, newY, nodeWidth, nodeHeight, existingNodes, minDistance)) {
+      return { x: newX, y: newY };
+    }
+  }
+  
+  // If we couldn't find a non-overlapping position after maxIterations,
+  // place it far away from center as a fallback
+  const fallbackDistance = spiralFactor * maxIterations;
+  const fallbackAngle = Math.random() * 2 * Math.PI;
+  return {
+    x: baseX + fallbackDistance * Math.cos(fallbackAngle),
+    y: baseY + fallbackDistance * Math.sin(fallbackAngle)
+  };
+};
+
+function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
+  const SPACING = 30; // Reduced spacing between nodes for tighter clustering
+  const moduleRadius = 300; // Reduced radius for module placement
+  
+  // Course node (root)
   const courseId = "root";
+  const courseNodeWidth = 250;
+  const courseNodeHeight = 250;
+  
   nodes.push({
     id: courseId,
     data: { 
@@ -35,55 +91,60 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       color: 'white',
       borderRadius: '50%',
       padding: 10,
-      width: 250,
-      height: 250,
+      width: courseNodeWidth,
+      height: courseNodeHeight,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       textAlign: 'center',
       fontWeight: 600,
-      fontSize: 24, // Increased font size
+      fontSize: 24,
       border: '2px solid rgba(139, 92, 246, 0.5)',
       boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
     },
   });
 
-  // Module nodes with collision detection
+  // Module nodes with improved collision avoidance
   courseData.modules.forEach((module, i) => {
     const moduleId = `module-${i}`;
-    let moduleX, moduleY;
-    let attempts = 0;
-    const maxAttempts = 50;
-
-    // Try to find a position without overlap
-    do {
-      const angle = (i * 2 * Math.PI / courseData.modules.length) + (Math.random() * 0.5 - 0.25);
-      const radius = moduleRadius + (Math.random() * 100); // Reduced random radius
-      moduleX = x + radius * Math.cos(angle);
-      moduleY = y + radius * Math.sin(angle);
-      attempts++;
-    } while (isOverlapping(moduleX, moduleY, 180, nodes, SPACING) && attempts < maxAttempts);
-
+    const moduleWidth = 180;
+    const moduleHeight = 180;
+    
+    // Calculate initial position in a circle around the course
+    const angle = (i * 2 * Math.PI / courseData.modules.length);
+    const baseModuleX = x + moduleRadius * Math.cos(angle);
+    const baseModuleY = y + moduleRadius * Math.sin(angle);
+    
+    // Find a non-overlapping position
+    const modulePosition = findNonOverlappingPosition(
+      baseModuleX,
+      baseModuleY,
+      moduleWidth,
+      moduleHeight,
+      nodes,
+      SPACING
+    );
+    
     nodes.push({
       id: moduleId,
       data: { 
         label: module.module,
         type: "module"
       },
-      position: { x: moduleX, y: moduleY },
+      position: modulePosition,
       style: {
         background: 'radial-gradient(circle at center, #4c1d95 0%, #312e81 100%)',
         color: 'white',
         borderRadius: '40%',
         padding: 8,
-        width: 180, // Increased width
-        height: 180, // Increased height
+        width: moduleWidth,
+        height: moduleHeight,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
         fontWeight: 500,
-        fontSize: 20, // Increased font size
+        fontSize: 20,
         border: '2px solid rgba(139, 92, 246, 0.3)',
         boxShadow: '0 0 15px rgba(139, 92, 246, 0.2)',
       },
@@ -106,20 +167,30 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       animationSpeed: 0.5,
     });
 
-    // Lesson nodes with collision detection
+    // Lesson nodes with improved collision avoidance
     module.lessons.forEach((lesson, j) => {
       const lessonId = `lesson-${i}-${j}`;
-      let lessonX, lessonY;
-      let lessonAttempts = 0;
-
-      do {
-        const baseAngle = Math.atan2(moduleY - y, moduleX - x);
-        const spreadAngle = baseAngle + (Math.random() * Math.PI/2 - Math.PI/4);
-        const lessonRadius = 200 + (Math.random() * 150); // Reduced radius
-        lessonX = moduleX + lessonRadius * Math.cos(spreadAngle);
-        lessonY = moduleY + lessonRadius * Math.sin(spreadAngle);
-        lessonAttempts++;
-      } while (isOverlapping(lessonX, lessonY, 140, nodes, SPACING) && lessonAttempts < maxAttempts);
+      const lessonWidth = 140;
+      const lessonHeight = 140;
+      
+      // Calculate base angle relative to module position
+      const baseAngle = Math.atan2(modulePosition.y - y, modulePosition.x - x);
+      // Add some variance to make it visually interesting, but not too much
+      const lessonAngle = baseAngle + ((j / module.lessons.length) - 0.5) * Math.PI/2;
+      const lessonRadius = 180; // Reduced radius for closer lesson clustering
+      
+      const baseLessonX = modulePosition.x + lessonRadius * Math.cos(lessonAngle);
+      const baseLessonY = modulePosition.y + lessonRadius * Math.sin(lessonAngle);
+      
+      // Find non-overlapping position
+      const lessonPosition = findNonOverlappingPosition(
+        baseLessonX,
+        baseLessonY,
+        lessonWidth,
+        lessonHeight,
+        nodes,
+        SPACING
+      );
 
       nodes.push({
         id: lessonId,
@@ -127,20 +198,20 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
           label: lesson,
           type: "lesson"
         },
-        position: { x: lessonX, y: lessonY },
+        position: lessonPosition,
         style: {
           background: 'radial-gradient(circle at center, #312e81 0%, #1e1b4b 100%)',
           color: 'white',
           borderRadius: '30%',
           padding: 6,
-          width: 140, // Increased width
-          height: 140, // Increased height
+          width: lessonWidth,
+          height: lessonHeight,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
           fontWeight: 400,
-          fontSize: 16, // Increased font size
+          fontSize: 16,
           border: '2px solid rgba(139, 92, 246, 0.2)',
           boxShadow: '0 0 10px rgba(139, 92, 246, 0.1)',
         },
