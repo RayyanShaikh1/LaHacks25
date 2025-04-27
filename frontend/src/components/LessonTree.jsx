@@ -1,8 +1,27 @@
 import React, { useMemo, useCallback } from "react";
 import ReactFlow, { Controls, Background, useReactFlow, ReactFlowProvider } from "react-flow-renderer";
 
+// Add these helper functions at the top
+const getDistance = (x1, y1, x2, y2) => {
+  return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+};
+
+const isOverlapping = (x, y, nodeSize, existingNodes, minDistance) => {
+  for (const node of existingNodes) {
+    const distance = getDistance(x, y, node.position.x, node.position.y);
+    const combinedSize = (nodeSize + parseFloat(node.style?.width || 0)) / 2;
+    if (distance < combinedSize + minDistance) {
+      return true;
+    }
+  }
+  return false;
+};
+
 function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
-  // Nucleus (course node) in the center
+  const SPACING = 50; // Minimum space between nodes
+  const moduleRadius = 600; // Increased base radius for more space
+  
+  // Course node (unchanged)
   const courseId = "root";
   nodes.push({
     id: courseId,
@@ -29,20 +48,22 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
     },
   });
 
-  // Dendrites (module nodes) arranged in a more organic pattern
-  const moduleCount = courseData.modules.length;
-  const moduleRadius = 450; // Increased radius for more spread
-  const angleStep = (2 * Math.PI) / moduleCount;
-  
+  // Module nodes with collision detection
   courseData.modules.forEach((module, i) => {
     const moduleId = `module-${i}`;
-    // Add some randomness to position for organic feel
-    const angle = i * angleStep + (Math.random() * 1 - 0.1);
-    // Increase the radius variation for more random distances
-    const radiusVariation = moduleRadius + (Math.random() * 200 - 30); // More variance in distance
-    const moduleX = x + radiusVariation * Math.cos(angle);
-    const moduleY = y + radiusVariation * Math.sin(angle);
-    
+    let moduleX, moduleY;
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    // Try to find a position without overlap
+    do {
+      const angle = (i * 2 * Math.PI / courseData.modules.length) + (Math.random() * 0.5 - 0.25);
+      const radius = moduleRadius + (Math.random() * 300);
+      moduleX = x + radius * Math.cos(angle);
+      moduleY = y + radius * Math.sin(angle);
+      attempts++;
+    } while (isOverlapping(moduleX, moduleY, 160, nodes, SPACING) && attempts < maxAttempts);
+
     nodes.push({
       id: moduleId,
       data: { 
@@ -68,7 +89,7 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       },
     });
 
-    // Synaptic connections (edges)
+    // Add edges
     edges.push({
       id: `e-${courseId}-${moduleId}`,
       source: courseId,
@@ -83,20 +104,21 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       animationSpeed: 0.5,
     });
 
-    // Axon terminals (lesson nodes)
-    const lessonCount = module.lessons.length;
-    const baseLessonRadius = 400;
-    const lessonAngleSpread = Math.PI / 2; // 90-degree spread
-    const startAngle = angle - lessonAngleSpread / 2;
-    
+    // Lesson nodes with collision detection
     module.lessons.forEach((lesson, j) => {
       const lessonId = `lesson-${i}-${j}`;
-      const lessonAngle = startAngle + (j * lessonAngleSpread / (lessonCount - 1 || 1));
-      // Increase the radius variation for lessons
-      const radiusVar = baseLessonRadius + (Math.random() * 150 - 75); // More variance in distance
-      const lessonX = moduleX + radiusVar * Math.cos(lessonAngle);
-      const lessonY = moduleY + radiusVar * Math.sin(lessonAngle);
-      
+      let lessonX, lessonY;
+      let lessonAttempts = 0;
+
+      do {
+        const baseAngle = Math.atan2(moduleY - y, moduleX - x);
+        const spreadAngle = baseAngle + (Math.random() * Math.PI/2 - Math.PI/4);
+        const lessonRadius = 300 + (Math.random() * 200);
+        lessonX = moduleX + lessonRadius * Math.cos(spreadAngle);
+        lessonY = moduleY + lessonRadius * Math.sin(spreadAngle);
+        lessonAttempts++;
+      } while (isOverlapping(lessonX, lessonY, 120, nodes, SPACING) && lessonAttempts < maxAttempts);
+
       nodes.push({
         id: lessonId,
         data: { 
