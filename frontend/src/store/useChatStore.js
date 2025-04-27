@@ -254,10 +254,18 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser, selectedGroup: null }),
+  setSelectedUser: (selectedUser) => set((state) => ({ 
+    selectedUser, 
+    selectedGroup: null,
+    isOverlayOpen: false,
+    isSidebarOpen: false
+  })),
   setSelectedGroup: (selectedGroup) =>
     set({ selectedGroup, selectedUser: null }),
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  toggleSidebar: () => set((state) => ({ 
+    isSidebarOpen: !state.isSidebarOpen,
+    isOverlayOpen: state.isOverlayOpen ? false : state.isOverlayOpen
+  })),
   toggleOverlay: () => set((state) => ({ isOverlayOpen: !state.isOverlayOpen })),
   toggleSidebarCollapse: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 
