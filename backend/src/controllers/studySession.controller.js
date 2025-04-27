@@ -6,6 +6,16 @@ import User from "../models/user.model.js";
 import StudySessionChat from "../models/studySessionChat.model.js";
 import { io } from "../lib/socket.js";
 
+// Helper to extract JSON from a string
+function extractJsonFromString(str) {
+  const firstBrace = str.indexOf('{');
+  const lastBrace = str.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return str.substring(firstBrace, lastBrace + 1);
+  }
+  return null;
+}
+
 // Initialize GridFS
 let gfs;
 mongoose.connection.once('open', () => {
@@ -297,9 +307,45 @@ export const initializeStudySessionAgent = async (req, res) => {
       content: aiLesson,
       timestamp: new Date()
     });
+
+    // Generate quiz using Gemini
+    const quizPrompt = `Based on the lesson about ${topic}, create a quiz with 5 multiple choice questions. 
+    Format the response as a JSON object with the following structure:
+    {
+      "questions": [
+        {
+          "question": "Question text",
+          "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+          "correct": 0, // index of correct option
+          "explanation": "Explanation of why this is the correct answer"
+        }
+      ]
+    }
+    Make the questions challenging but fair, and ensure the explanations are educational.`;
+
+    const quizResponse = await getGeminiResponse(quizPrompt, agentId, memberNames);
+    let quiz;
+    try {
+      quiz = JSON.parse(quizResponse);
+    } catch (err) {
+      // Try to extract JSON from the response
+      const jsonStr = extractJsonFromString(quizResponse);
+      if (jsonStr) {
+        quiz = JSON.parse(jsonStr);
+      } else {
+        throw new Error("Failed to parse quiz JSON");
+      }
+    }
+
+    // Store the quiz in the chat document
+    chat.quiz = quiz;
     await chat.save();
 
-    res.status(201).json({ initialized: true, messages: chat.messages });
+    res.status(201).json({ 
+      initialized: true, 
+      messages: chat.messages,
+      quiz: chat.quiz 
+    });
   } catch (error) {
     console.error("Error initializing study session agent:", error);
     res.status(500).json({ error: "Failed to initialize study session agent" });

@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
-import { X } from "lucide-react";
+import { X, BookOpen } from "lucide-react";
 import MarkdownMessage from "./MarkdownMessage";
+import QuizModal from "./QuizModal";
 
 const StudyChat = ({ topic, groupId, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
+  const [quiz, setQuiz] = useState(null);
+  const [showQuiz, setShowQuiz] = useState(false);
   const { authUser, socket } = useAuthStore();
 
   // Fetch chat history on open, or initialize Gemini agent if no messages
@@ -17,11 +20,13 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         const res = await axiosInstance.get(`/study-session/chat/history?groupId=${groupId}&topic=${encodeURIComponent(topic)}`);
         if (res.data.messages && res.data.messages.length > 0) {
           setMessages(res.data.messages);
+          setQuiz(res.data.quiz);
         } else {
           // No messages, initialize Gemini agent and get lesson
           setIsLoading(true);
           const initRes = await axiosInstance.post(`/study-session/chat/init`, { groupId, topic });
           setMessages(initRes.data.messages);
+          setQuiz(initRes.data.quiz);
           setIsLoading(false);
         }
       } catch (error) {
@@ -79,12 +84,24 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-neutral-700">
         <h3 className="text-lg font-semibold text-neutral-200">{topic}</h3>
-        <button 
-          onClick={onClose}
-          className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
-        >
-          <X size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          {quiz && (
+            <button
+              onClick={() => setShowQuiz(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white 
+                       hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              <BookOpen size={16} />
+              Take Quiz
+            </button>
+          )}
+          <button 
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
       </div>
       
       {/* Messages */}
@@ -144,6 +161,14 @@ const StudyChat = ({ topic, groupId, onClose }) => {
           </button>
         </form>
       </div>
+
+      {/* Quiz Modal */}
+      {showQuiz && (
+        <QuizModal 
+          quiz={quiz}
+          onClose={() => setShowQuiz(false)}
+        />
+      )}
     </div>
   );
 };
