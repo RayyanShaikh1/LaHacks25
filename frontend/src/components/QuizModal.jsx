@@ -182,7 +182,7 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
                     onClick={handleRetake}
                     className="px-4 py-2 rounded-lg bg-[#7142dd52] hover:bg-[#7142dd] transition-colors text-white"
                   >
-                    Retake Quiz
+                    Take Again
                   </button>
                 )}
               </div>

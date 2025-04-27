@@ -138,6 +138,16 @@ const StudyChat = ({ topic, groupId, onClose }) => {
   );
   const hasCompletedQuiz = !!userQuizResponse;
 
+  // Track if user has completed a quiz in this session
+  const [hasCompletedQuizInSession, setHasCompletedQuizInSession] = useState(false);
+
+  // Update hasCompletedQuizInSession when quiz is completed
+  useEffect(() => {
+    if (userQuizResponse) {
+      setHasCompletedQuizInSession(true);
+    }
+  }, [userQuizResponse]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputMessage.trim() || isSending) return;
@@ -284,7 +294,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {quiz && !hasCompletedQuiz && (
+          {quiz && !hasCompletedQuiz && !hasCompletedQuizInSession && (
             <button
               onClick={handleTakeQuiz}
               className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#7142dd52] text-white 
@@ -294,7 +304,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
               Take Quiz
             </button>
           )}
-          {quiz && hasCompletedQuiz && (
+          {(quiz && hasCompletedQuiz) || hasCompletedQuizInSession ? (
             <>
               <button
                 onClick={handleReviewQuiz}
@@ -313,7 +323,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
                 Retake
               </button>
             </>
-          )}
+          ) : null}
           <button 
             onClick={onClose}
             className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
