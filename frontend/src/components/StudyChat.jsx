@@ -14,6 +14,14 @@ const StudyChat = ({ topic, groupId, onClose }) => {
   const [reviewAnswers, setReviewAnswers] = useState(null);
   const { authUser, socket } = useAuthStore();
   const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+
+  // Scroll to bottom helper function
+  const scrollToBottom = (behavior = 'smooth') => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
 
   // Reset state when topic or groupId changes
   useEffect(() => {
@@ -21,6 +29,18 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     setQuiz(null);
     setIsLoading(true);
   }, [topic, groupId]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Scroll to bottom when chat is loaded
+  useEffect(() => {
+    if (!isLoading) {
+      scrollToBottom('instant');
+    }
+  }, [isLoading]);
 
   // Fetch chat history on open, or initialize Gemini agent if no messages
   useEffect(() => {
@@ -82,6 +102,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       socket.emit("joinStudyChat", { groupId, topic });
       socket.on("newStudyChatMessages", (newMessages) => {
         setMessages((prev) => [...prev, ...newMessages]);
+        scrollToBottom();
       });
     }
     return () => {
@@ -114,6 +135,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         history: messages,
         groupId
       });
+      scrollToBottom();
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages(prev => [...prev, { 
@@ -202,7 +224,10 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       </div>
       
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0">
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0"
+      >
         {messages.map((msg, i) => (
           <div 
             key={i} 
