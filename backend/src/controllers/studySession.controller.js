@@ -372,6 +372,34 @@ export const saveQuizResponse = async (req, res) => {
     // Add new response
     chat.quiz.responses.push({ user: userId, answers, completed: true });
     await chat.save();
+
+    // Get the user's name for the quiz results
+    const user = await User.findById(userId).select("name");
+    
+    // Format quiz results for Gemini
+    let quizResults = `Quiz Results for Topic: ${topic}\n\n`;
+    let correctAnswers = 0;
+    
+    chat.quiz.questions.forEach((q, index) => {
+      const isCorrect = answers[index] === q.correct;
+      if (isCorrect) correctAnswers++;
+      quizResults += `Question ${index + 1}: ${q.question}\n`;
+      quizResults += `Correct Answer: ${q.options[q.correct]}\n`;
+      quizResults += `${user.name}'s Answer: ${q.options[answers[index]]} (${isCorrect ? 'Correct' : 'Incorrect'})\n\n`;
+    });
+
+    const score = (correctAnswers / chat.quiz.questions.length) * 100;
+    quizResults += `Overall Score: ${score.toFixed(0)}%\n`;
+
+    // Send quiz results to group chat's Gemini agent
+    const groupAgentId = `group_${groupId}`;
+    await getGeminiResponse(
+      quizResults,
+      groupAgentId,
+      null,
+      "system"
+    );
+
     res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error saving quiz response:", error);

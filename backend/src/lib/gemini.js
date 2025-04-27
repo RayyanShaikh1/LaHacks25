@@ -178,7 +178,11 @@ export const getGeminiResponse = async (
       }
     } else if (prompt) {
       // Handle text-only messages
-      const formattedPrompt = senderName ? `${senderName}: ${prompt}` : prompt;
+      const formattedPrompt = senderName === "system" 
+        ? `system: ${prompt}`
+        : senderName 
+          ? `${senderName}: ${prompt}`
+          : prompt;
       messageParts = [{ text: formattedPrompt }];
     }
 
