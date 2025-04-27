@@ -82,33 +82,55 @@ const Sidebar = () => {
       </div>
 
       {/* Tabs */}
-      <div className={`flex ${isSidebarCollapsed ? 'px-2 pt-4 pb-2 flex-col gap-2' : 'px-4 pt-4 pb-2 gap-2'}`}>
-        <button
-          className={`flex-1 py-2 rounded-lg flex items-center justify-center transition-all ${
-            activeTab === "groups"
-              ? "bg-[#7142dd52] text-neutral-200 font-medium"
-              : "text-neutral-400 hover:bg-neutral-700/50"
-          } ${isSidebarCollapsed ? 'w-full h-10' : ''}`}
-          onClick={() => setActiveTab("groups")}
-        >
-          <div className={`flex items-center justify-center ${isSidebarCollapsed ? 'w-full' : ''}`}>
-            <Hash size={isSidebarCollapsed ? 18 : 16} />
-            {!isSidebarCollapsed && <span className="ml-2">Groups</span>}
+      <div className={`flex ${isSidebarCollapsed ? 'px-2 pt-4 pb-2' : 'px-4 pt-4 pb-2'}`}>
+        <div className={`w-full relative bg-neutral-800/50 rounded-lg p-1 ${isSidebarCollapsed ? 'flex flex-col' : ''}`}>
+          <div
+            className={`absolute transition-all duration-200 ${
+              isSidebarCollapsed 
+                ? 'inset-x-1' 
+                : 'inset-y-1'
+            }`}
+            style={
+              isSidebarCollapsed
+                ? {
+                    top: activeTab === "groups" ? "1px" : "50%",
+                    bottom: activeTab === "groups" ? "50%" : "1px",
+                    background: "#7142dd52",
+                    borderRadius: "0.5rem"
+                  }
+                : {
+                    left: activeTab === "groups" ? "1px" : "50%",
+                    right: activeTab === "groups" ? "50%" : "1px",
+                    background: "#7142dd52",
+                    borderRadius: "0.5rem"
+                  }
+            }
+          />
+          <div className={`relative z-10 ${isSidebarCollapsed ? 'flex flex-col h-20' : 'flex'}`}>
+            <button
+              className={`flex-1 py-2 rounded-lg flex items-center justify-center transition-all ${
+                activeTab === "groups" ? "text-neutral-200 font-medium" : "text-neutral-400"
+              }`}
+              onClick={() => setActiveTab("groups")}
+            >
+              <div className="flex items-center justify-center">
+                <Hash size={isSidebarCollapsed ? 18 : 16} />
+                {!isSidebarCollapsed && <span className="ml-2">Groups</span>}
+              </div>
+            </button>
+            <button
+              className={`flex-1 py-2 rounded-lg flex items-center justify-center transition-all ${
+                activeTab === "direct" ? "text-neutral-200 font-medium" : "text-neutral-400"
+              }`}
+              onClick={() => setActiveTab("direct")}
+            >
+              <div className="flex items-center justify-center">
+                <MessageSquare size={isSidebarCollapsed ? 18 : 16} />
+                {!isSidebarCollapsed && <span className="ml-2">Messages</span>}
+              </div>
+            </button>
           </div>
-        </button>
-        <button
-          className={`flex-1 py-2 rounded-lg flex items-center justify-center transition-all ${
-            activeTab === "direct"
-              ? "bg-[#7142dd52] text-neutral-200 font-medium"
-              : "text-neutral-400 hover:bg-neutral-700/50"
-          } ${isSidebarCollapsed ? 'w-full h-10' : ''}`}
-          onClick={() => setActiveTab("direct")}
-        >
-          <div className={`flex items-center justify-center ${isSidebarCollapsed ? 'w-full' : ''}`}>
-            <MessageSquare size={isSidebarCollapsed ? 18 : 16} />
-            {!isSidebarCollapsed && <span className="ml-2">Messages</span>}
-          </div>
-        </button>
+        </div>
       </div>
 
       {/* Search Bar */}

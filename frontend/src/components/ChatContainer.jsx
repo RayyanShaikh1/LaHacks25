@@ -122,11 +122,11 @@ const ChatContainer = () => {
                   />
                 </div>
                 
-                <p className="text-sm mt-8">
+                {/* <p className="text-sm mt-8">
                   {selectedGroup 
                     ? "Click the Layout icon in the top right to open the Study Session Overlay"
                     : "Start the conversation!"}
-                </p>
+                </p> */}
               </div>
             ) : (
               groupedMessages.map((group, groupIndex) => {
