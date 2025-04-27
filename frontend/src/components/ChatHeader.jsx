@@ -71,17 +71,25 @@ const ChatHeader = () => {
           <>
             <button 
               onClick={toggleSidebar}
-              className={`p-2 rounded-full ${isSidebarOpen ? 'bg-neutral-700 text-neutral-200' : 'hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200'} transition-colors`}
+              className={`p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors`}
               title="Toggle Sidebar"
             >
-              <Sidebar size={18} />
+              <Sidebar size={18} className={`${
+            isSidebarOpen 
+              ? 'text-[#7142dd]' 
+              : 'text-neutral-400 hover:text-neutral-200'
+          } transition-colors`} />
             </button>
             <button 
               onClick={toggleOverlay}
-              className={`p-2 rounded-full ${isOverlayOpen ? 'bg-neutral-700 text-neutral-200' : 'hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200'} transition-colors`}
+              className={`p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors`}
               title="Toggle Overlay"
             >
-              <Layout size={18} />
+              <Layout size={18} className={`${
+            isOverlayOpen 
+              ? 'text-[#7142dd]' 
+              : 'text-neutral-400 hover:text-neutral-200'
+          } transition-colors`} />
             </button>
           </>
         )}

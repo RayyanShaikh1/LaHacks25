@@ -4,68 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, Mail, BookOpen, PenTool, ArrowLeft, Upload, Save, X, Plus, Trash2 } from "lucide-react";
 
-// Animated background particles component
-const ParticleBackground = () => {
-  useEffect(() => {
-    // Simple stars animation
-    const canvas = document.getElementById("stars-canvas");
-    // Make sure we have a canvas element
-    if (!(canvas instanceof HTMLCanvasElement)) return;
-    
-    const ctx = canvas.getContext("2d");
-    let particles = [];
-    
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
-    
-    // Create particles
-    const createParticles = () => {
-      particles = [];
-      const particleCount = 100;
-      
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 1.5,
-          speed: 0.05 + Math.random() * 0.1,
-          opacity: 0.1 + Math.random() * 0.5,
-        });
-      }
-    };
-    
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      particles.forEach(p => {
-        p.y -= p.speed;
-        if (p.y < -5) p.y = canvas.height + 5;
-        
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
-        ctx.fill();
-      });
-      
-      requestAnimationFrame(animate);
-    };
-    
-    createParticles();
-    animate();
-    
-    return () => {
-      window.removeEventListener("resize", resizeCanvas);
-    };
-  }, []);
-  
-  return <canvas id="stars-canvas" className="absolute inset-0 z-0" />;
-};
-
 const CoursesEditor = ({ courses, onUpdate, isLoading }) => {
   const [newCourse, setNewCourse] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -91,7 +29,7 @@ const CoursesEditor = ({ courses, onUpdate, isLoading }) => {
           value={newCourse}
           onChange={(e) => setNewCourse(e.target.value)}
           placeholder="Add a new course"
-          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white focus:outline-none focus:border-[#c8c8ff]"
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white focus:outline-none focus:border-white"
           disabled={isLoading}
         />
         <motion.button
@@ -99,7 +37,7 @@ const CoursesEditor = ({ courses, onUpdate, isLoading }) => {
           whileTap={{ scale: 0.95 }}
           onClick={handleAddCourse}
           disabled={isLoading || !newCourse.trim()}
-          className="p-1 rounded-lg bg-[#070738] hover:bg-[#0a0a45] border border-white/10 disabled:opacity-50"
+          className="p-1 rounded-lg bg-[#30336b] hover:bg-[#0a0a45] border border-white/10 disabled:opacity-50"
         >
           <Plus size={16} className="text-white" />
         </motion.button>
@@ -124,7 +62,7 @@ const CoursesEditor = ({ courses, onUpdate, isLoading }) => {
           </div>
         ))}
         {courses.length === 0 && (
-          <div className="text-center text-[#c8c8ff]/70 py-2">
+          <div className="text-center text-white/70 py-2">
             No courses added yet
           </div>
         )}
@@ -171,10 +109,10 @@ const ProfileInfoItem = ({ icon, label, value, isEditable = false, onSave, isLoa
   };
 
   return (
-    <div className="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-xl border border-white/10">
-      <div className="text-[#c8c8ff] pt-1">{icon}</div>
+    <div className="flex items-start gap-3 mb-4 background bg-white/5 p-4 rounded-xl border border-white/10">
+      <div className="text-white pt-1">{icon}</div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-[#c8c8ff]/70">{label}</div>
+        <div className="text-sm text-white/70">{label}</div>
         {isEditable && isEditing ? (
           <div className="space-y-2">
             <div className="flex flex-col gap-2">
@@ -186,7 +124,7 @@ const ProfileInfoItem = ({ icon, label, value, isEditable = false, onSave, isLoa
                     setEditedValue(e.target.value);
                     setError('');
                   }}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#c8c8ff] resize-none overflow-y-auto"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-white resize-none overflow-y-auto"
                   disabled={isLoading}
                   rows={1}
                 />
@@ -198,7 +136,7 @@ const ProfileInfoItem = ({ icon, label, value, isEditable = false, onSave, isLoa
                     setEditedValue(e.target.value);
                     setError('');
                   }}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white focus:outline-none focus:border-[#c8c8ff]"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-white focus:outline-none focus:border-white"
                   disabled={isLoading}
                 />
               )}
@@ -227,7 +165,7 @@ const ProfileInfoItem = ({ icon, label, value, isEditable = false, onSave, isLoa
           </div>
         ) : (
           <div 
-            className="text-white font-medium cursor-pointer hover:text-[#c8c8ff] transition-colors break-words whitespace-pre-wrap"
+            className="text-white font-medium cursor-pointer hover:text-white transition-colors break-words whitespace-pre-wrap"
             onClick={() => isEditable && setIsEditing(true)}
           >
             {value || (label === 'Biography' ? 'Tell us about yourself...' : value)}
@@ -267,12 +205,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#340738] via-[#470952] to-[#0a0a45] z-0" />
-      
-      {/* Animated stars */}
-      <ParticleBackground />
+    <div className="min-h-screen flex items-center background bg-neutral-900 justify-center relative overflow-hidden">
       
       {/* Content */}
       <div className="relative z-10 w-full max-w-2xl px-4 py-10">
@@ -291,7 +224,7 @@ const ProfilePage = () => {
               <motion.h1 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#c8c8ff] to-white"
+                className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white"
               >
                 Profile
               </motion.h1>
@@ -319,7 +252,7 @@ const ProfilePage = () => {
                     />
                   </div>
                   
-                  <label className="absolute bottom-0 right-0 w-10 h-10 bg-[#070738] hover:bg-[#0a0a45] rounded-full flex items-center justify-center cursor-pointer border-2 border-white/20 shadow-lg transition-all">
+                  <label className="absolute bottom-0 right-0 w-10 h-10 bg-[#30336b] hover:bg-[#0a0a45] rounded-full flex items-center justify-center cursor-pointer border-2 border-white/20 shadow-lg transition-all">
                     <Upload size={16} className="text-white" />
                     <input
                       type="file"
@@ -332,7 +265,7 @@ const ProfilePage = () => {
                 </div>
                 
                 <div className="text-center">
-                  <p className="text-[#c8c8ff]/80 text-sm">
+                  <p className="text-white/80 text-sm">
                     {isUpdatingProfile ? "Uploading..." : "Upload a new photo"}
                   </p>
                 </div>
@@ -359,9 +292,9 @@ const ProfilePage = () => {
                 />
                 
                 <div className="flex items-center gap-3 mb-4 bg-white/5 p-4 rounded-xl border border-white/10">
-                  <div className="text-[#c8c8ff]"><BookOpen size={20} /></div>
+                  <div className="text-white"><BookOpen size={20} /></div>
                   <div className="flex-1">
-                    <div className="text-sm text-[#c8c8ff]/70">Courses</div>
+                    <div className="text-sm text-white/70">Courses</div>
                     <CoursesEditor 
                       courses={authUser?.courses || []}
                       onUpdate={handleCoursesUpdate}

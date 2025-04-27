@@ -101,7 +101,7 @@ const MessageInput = () => {
         </div>
         <button
           type="submit"
-          className="p-2 rounded-full bg-neutral-700 text-neutral-200 hover:bg-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-neutral-600"
+          className="p-2 rounded-full bg-[#7142dd52] text-neutral-200 hover:bg-[#7142dd] transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-neutral-600"
           disabled={!text.trim() && !imagePreview}
         >
           <Send size={20} />
