@@ -15,6 +15,9 @@ const StudyChat = ({ topic, groupId, onClose }) => {
   const { authUser, socket } = useAuthStore();
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const [isSending, setIsSending] = useState(false);
+  const [isNexusThinking, setIsNexusThinking] = useState(false);
+  const [lastMessageWasForNexus, setLastMessageWasForNexus] = useState(false);
 
   // Scroll to bottom helper function
   const scrollToBottom = (behavior = 'smooth') => {
@@ -101,8 +104,23 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     if (socket && groupId && topic) {
       socket.emit("joinStudyChat", { groupId, topic });
       socket.on("newStudyChatMessages", (newMessages) => {
-        setMessages((prev) => [...prev, ...newMessages]);
-        scrollToBottom();
+        // Filter out any temporary messages that might be duplicates
+        const filteredNewMessages = newMessages.filter(newMsg => 
+          !messages.some(existingMsg => 
+            existingMsg._id === newMsg._id || 
+            (existingMsg._id && existingMsg._id.startsWith('temp-') && existingMsg.content === newMsg.content)
+          )
+        );
+        
+        if (filteredNewMessages.length > 0) {
+          setMessages((prev) => [...prev, ...filteredNewMessages]);
+          scrollToBottom();
+          
+          // Only hide Nexus thinking if the last message was for Nexus
+          if (lastMessageWasForNexus) {
+            setIsNexusThinking(false);
+          }
+        }
       });
     }
     return () => {
@@ -111,7 +129,7 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         socket.off("newStudyChatMessages");
       }
     };
-  }, [socket, groupId, topic]);
+  }, [socket, groupId, topic, messages, lastMessageWasForNexus]);
 
 
   // Determine if the current user has completed the quiz
@@ -122,11 +140,39 @@ const StudyChat = ({ topic, groupId, onClose }) => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || isSending) return;
 
     const message = inputMessage.trim();
     setInputMessage("");
-    setIsLoading(true);
+    setIsSending(true);
+    
+    // Check if the message is for Nexus
+    const isForNexus = message.toLowerCase().includes('@nexus');
+    setLastMessageWasForNexus(isForNexus);
+    
+    // Only show Nexus thinking if the message is for Nexus
+    if (isForNexus) {
+      setIsNexusThinking(true);
+    }
+    
+    // Create a temporary message object
+    const tempMessage = {
+      role: "user",
+      content: message,
+      sender: {
+        name: authUser.name,
+        _id: authUser._id
+      },
+      _id: `temp-${Date.now()}` // Temporary ID
+    };
+    
+    // Add the message to the UI immediately
+    setMessages(prev => [...prev, tempMessage]);
+    
+    // Scroll to the new message
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
 
     try {
       await axiosInstance.post("/study-session/chat", {
@@ -135,15 +181,19 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         history: messages,
         groupId
       });
-      scrollToBottom();
+      // Server will handle adding the response via socket
     } catch (error) {
       console.error("Error sending message:", error);
+      // Remove the temporary message if there was an error
+      setMessages(prev => prev.filter(msg => msg._id !== tempMessage._id));
+      // Add error message
       setMessages(prev => [...prev, { 
         role: "system", 
         content: "Sorry, there was an error processing your message." 
       }]);
     } finally {
-      setIsLoading(false);
+      setIsSending(false);
+      // We'll set isNexusThinking to false when we receive the response via socket
     }
   };
 
@@ -175,15 +225,65 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     setShowQuiz(true);
   };
 
+  // Group messages by sender and date
+  const getGroupedMessages = () => {
+    if (!messages.length) return [];
+    
+    const grouped = [];
+    let currentGroup = null;
+    
+    messages.forEach((message) => {
+      // Skip system messages in grouping
+      if (message.role === "system") {
+        grouped.push({
+          sender: { name: "System", profilePic: null },
+          messages: [message],
+          date: new Date(),
+          isCurrentUser: false
+        });
+        return;
+      }
+      
+      const isCurrentUser = message.role === "user";
+      const senderName = isCurrentUser ? authUser.name : "Nexus AI";
+      const senderProfilePic = isCurrentUser ? authUser.profilePic : "https://www.gravatar.com/avatar/?d=mp";
+      
+      // Create a new group if:
+      // 1. No current group exists
+      // 2. Current message is from a different sender
+      if (!currentGroup || currentGroup.sender.name !== senderName) {
+        currentGroup = {
+          sender: { name: senderName, profilePic: senderProfilePic },
+          messages: [message],
+          date: new Date(),
+          isCurrentUser
+        };
+        grouped.push(currentGroup);
+      } else {
+        // Add to existing group
+        currentGroup.messages.push(message);
+      }
+    });
+    
+    return grouped;
+  };
+
   return (
-    <div className="flex flex-col h-full min-h-0 w-full bg-neutral-800 border-l border-neutral-700">
+    <div className="flex flex-col h-full bg-neutral-850">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-neutral-700 shrink-0">
-        <div className="min-w-0 flex-1 mr-2">
-          <h3 className="text-base sm:text-lg font-semibold text-neutral-200 truncate">{topic}</h3>
-          <p className="text-xs sm:text-sm text-neutral-400">Study Session</p>
+      <div className="px-4 py-3 flex items-center justify-between border-b border-neutral-700">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-neutral-600">
+            <div className="w-full h-full bg-neutral-700 flex items-center justify-center">
+              <BookOpen size={16} className="text-neutral-200" />
+            </div>
+          </div>
+          <div>
+            <h3 className="font-medium text-neutral-200">{topic}</h3>
+            <p className="text-xs text-neutral-400">Study Session</p>
+          </div>
         </div>
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           {quiz && !hasCompletedQuiz && (
             <button
               onClick={handleTakeQuiz}
@@ -216,9 +316,9 @@ const StudyChat = ({ topic, groupId, onClose }) => {
           )}
           <button 
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
+            className="p-2 rounded-full hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
       </div>
@@ -226,35 +326,71 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       {/* Messages */}
       <div 
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0"
+        className="flex-1 overflow-y-auto space-y-4 py-4 px-4"
       >
-        {messages.map((msg, i) => (
-          <div 
-            key={i} 
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+        {getGroupedMessages().map((group, groupIndex) => (
+          <div
+            key={groupIndex}
+            className="hover:bg-neutral-800/50 px-4 py-2 rounded-lg transition-colors"
           >
-            <div 
-              className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
-                msg.role === "user" 
-                  ? "bg-blue-600 text-white" 
-                  : msg.role === "system"
-                  ? "bg-red-600 text-white"
-                  : "bg-neutral-700 text-neutral-200"
-              }`}
-            >
-              {/* Show sender name if available and not assistant/system */}
-              {msg.role === "user" && msg.sender && msg.sender.name && (
-                <div className="text-xs font-semibold mb-1 text-blue-200">{msg.sender.name}</div>
-              )}
-              {msg.role === "assistant" && (
-                <div className="text-xs font-semibold mb-1 text-green-200">Nexus AI</div>
-              )}
-              <div className="text-sm sm:text-base">
-                <MarkdownMessage content={msg.content} />
+            <div className="flex items-start gap-3 w-full">
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mt-0.5 border border-neutral-600">
+                <img
+                  src={group.sender.profilePic || "/avatar.png"}
+                  alt={group.sender.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 min-w-0">
+                {/* Sender name */}
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium text-neutral-200">
+                    {group.sender.name}
+                  </span>
+                </div>
+
+                {/* Message content */}
+                <div className="space-y-1">
+                  {group.messages.map((message, messageIndex) => (
+                    <div
+                      key={messageIndex}
+                      className="text-neutral-200"
+                    >
+                      <MarkdownMessage content={message.content} />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         ))}
+        
+        {isNexusThinking && (
+          <div className="hover:bg-neutral-800/50 px-4 py-2 rounded-lg transition-colors">
+            <div className="flex items-start gap-3 w-full">
+              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mt-0.5 border border-neutral-600">
+                <img
+                  src="https://www.gravatar.com/avatar/?d=mp"
+                  alt="Nexus AI"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium text-neutral-200">Nexus AI</span>
+                </div>
+                <div className="text-neutral-400 flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={16} />
+                  <span>Nexus is thinking...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-neutral-700 text-neutral-200 rounded-lg p-2 sm:p-3 flex items-center gap-2">
@@ -267,20 +403,20 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       </div>
       
       {/* Input */}
-      <div className="p-3 sm:p-4 border-t border-neutral-700 shrink-0">
+      <div className="p-4 border-t border-neutral-700">
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 min-w-0 bg-neutral-700 text-neutral-200 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#7142dd52]"
-            disabled={isLoading}
+            className="flex-1 min-w-0 bg-neutral-700 text-neutral-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7142dd52]"
+            disabled={isSending}
           />
           <button
             type="submit"
-            disabled={isLoading || !inputMessage.trim()}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#7142dd52] text-neutral-200 rounded-lg hover:bg-[#7142dd] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-sm sm:text-base"
+            disabled={isSending || !inputMessage.trim()}
+            className="px-4 py-2 bg-[#7142dd52] text-neutral-200 rounded-lg hover:bg-[#7142dd] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-sm"
           >
             Send
           </button>
