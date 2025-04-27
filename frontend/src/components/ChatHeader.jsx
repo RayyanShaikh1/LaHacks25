@@ -1,10 +1,13 @@
 import { X, Users, Hash, Sidebar, Layout } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
+import { useState } from "react";
+import GroupUsersDropdown from "./GroupUsersDropdown";
 
 const ChatHeader = () => {
   const { selectedUser, selectedGroup, setSelectedUser, setSelectedGroup, toggleSidebar, toggleOverlay, isSidebarOpen, isOverlayOpen } = useChatStore();
   const { onlineUsers } = useAuthStore();
+  const [showUsersDropdown, setShowUsersDropdown] = useState(false);
 
   const handleClose = () => {
     if (selectedUser) {
@@ -17,10 +20,13 @@ const ChatHeader = () => {
   if (!selectedUser && !selectedGroup) return null;
 
   return (
-    <div className="px-4 py-3 flex items-center justify-between border-b border-neutral-700">
+    <div className="px-4 py-3 flex items-center justify-between border-b border-neutral-700 relative">
       <div className="flex items-center gap-3">
         {/* Icon */}
-        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-neutral-600">
+        <div 
+          className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-neutral-600 cursor-pointer"
+          onClick={() => selectedGroup && setShowUsersDropdown(!showUsersDropdown)}
+        >
           {selectedGroup && !selectedGroup.groupImage ? (
             <div className="w-full h-full bg-neutral-700 flex items-center justify-center">
               <Hash size={16} className="text-neutral-200" />
@@ -86,6 +92,15 @@ const ChatHeader = () => {
           <X size={18} />
         </button>
       </div>
+
+      {/* Group Users Dropdown */}
+      {selectedGroup && (
+        <GroupUsersDropdown
+          isOpen={showUsersDropdown}
+          onClose={() => setShowUsersDropdown(false)}
+          group={selectedGroup}
+        />
+      )}
     </div>
   );
 };

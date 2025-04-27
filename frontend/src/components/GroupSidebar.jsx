@@ -25,12 +25,14 @@ const GroupSidebar = () => {
   if (!isSidebarOpen) return null;
 
   return (
-    <div className="w-80 bg-neutral-800 h-full border-l border-neutral-700 shadow-lg">
-      <div className="p-4">
+    <div className="w-80 bg-neutral-800 h-full border-l border-neutral-700 shadow-lg flex flex-col">
+      <div className="p-4 border-b border-neutral-700">
         <h2 className="text-lg font-semibold text-neutral-200">Skills Progress</h2>
-        
-        {/* Skills Section */}
-        <div className="mt-6">
+      </div>
+      
+      {/* Skills Section */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4">
           {skills.length === 0 ? (
             <p className="text-sm text-neutral-400">No quiz data available yet</p>
           ) : (
@@ -57,11 +59,13 @@ const GroupSidebar = () => {
                             <span className="text-xs text-neutral-400">{userScore.user.name}</span>
                             <span className="text-xs text-neutral-400 ml-auto">{userScore.score}%</span>
                           </div>
-                          <div className="w-full bg-neutral-700 rounded-full h-1.5">
-                            <div 
-                              className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                              style={{ width: `${userScore.score}%` }}
-                            />
+                          <div className="pt-1">
+                            <div className="w-full bg-neutral-700 rounded-full h-1.5">
+                              <div 
+                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                style={{ width: `${userScore.score}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
                       ))
