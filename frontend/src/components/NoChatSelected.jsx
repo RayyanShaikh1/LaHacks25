@@ -26,9 +26,11 @@ const NoChatSelected = () => {
     @keyframes letter-wave {
       0%, 40%, 60%, 100% {
         transform: translateY(0);
+        color: white;
       }
       50% {
         transform: translateY(-8px);
+        color: #9b70ff52;
       }
     }
     .animate-letter {
