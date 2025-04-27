@@ -1,5 +1,5 @@
 import express from "express";
-import { processStudyFile, getStudySessionLesson, getStudyMaterial, handleStudyChat, getStudyChatHistory } from "../controllers/studySession.controller.js";
+import { processStudyFile, getStudySessionLesson, getStudyMaterial, handleStudyChat, getStudyChatHistory, initializeStudySessionAgent } from "../controllers/studySession.controller.js";
 import { protectRoute } from "../middleware/auth.protectedroute.js";
 import multer from "multer";
 
@@ -46,6 +46,13 @@ router.get(
   "/chat/history",
   protectRoute,
   getStudyChatHistory
+);
+
+// New route for initializing a study session agent
+router.post(
+  "/chat/init",
+  protectRoute,
+  initializeStudySessionAgent
 );
 
 export default router; 

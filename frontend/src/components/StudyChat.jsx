@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
 import { X } from "lucide-react";
+import MarkdownMessage from "./MarkdownMessage";
 
 const StudyChat = ({ topic, groupId, onClose }) => {
   const [messages, setMessages] = useState([]);
@@ -9,17 +10,26 @@ const StudyChat = ({ topic, groupId, onClose }) => {
   const [inputMessage, setInputMessage] = useState("");
   const { authUser, socket } = useAuthStore();
 
-  // Fetch chat history on open
+  // Fetch chat history on open, or initialize Gemini agent if no messages
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchOrInit = async () => {
       try {
         const res = await axiosInstance.get(`/study-session/chat/history?groupId=${groupId}&topic=${encodeURIComponent(topic)}`);
-        setMessages(res.data.messages);
+        if (res.data.messages && res.data.messages.length > 0) {
+          setMessages(res.data.messages);
+        } else {
+          // No messages, initialize Gemini agent and get lesson
+          setIsLoading(true);
+          const initRes = await axiosInstance.post(`/study-session/chat/init`, { groupId, topic });
+          setMessages(initRes.data.messages);
+          setIsLoading(false);
+        }
       } catch (error) {
         setMessages([]);
+        setIsLoading(false);
       }
     };
-    if (groupId && topic) fetchHistory();
+    if (groupId && topic) fetchOrInit();
   }, [groupId, topic]);
 
   // Real-time updates: join/leave room and listen for new messages
@@ -47,17 +57,14 @@ const StudyChat = ({ topic, groupId, onClose }) => {
     setIsLoading(true);
 
     try {
-      // Do NOT optimistically add user or assistant messages
       await axiosInstance.post("/study-session/chat", {
         topic,
         message,
         history: messages,
         groupId
       });
-      // (do not update messages here, let the socket event handle it)
     } catch (error) {
       console.error("Error sending message:", error);
-      // Add error message
       setMessages(prev => [...prev, { 
         role: "system", 
         content: "Sorry, there was an error processing your message." 
@@ -103,7 +110,8 @@ const StudyChat = ({ topic, groupId, onClose }) => {
               {msg.role === "assistant" && (
                 <div className="text-xs font-semibold mb-1 text-green-200">AI Assistant</div>
               )}
-              {msg.content}
+              {/* Render markdown for all messages */}
+              <MarkdownMessage content={msg.content} />
             </div>
           </div>
         ))}
