@@ -209,9 +209,10 @@ const studySessionPrompt = `You are an expert study assistant. Your task is to a
 Guidelines:
 1. The root node should be the course name.
 2. The second level should contain topics with their numbers (if applicable) and titles.
-3. The third level should contain specificlessons with their numbers and titles and should appear under their respective modules.
+3. The third level should contain specific lessons with their numbers and titles and should appear under their respective modules.
 4. The structure should be limited to these three levels only.
-5. Use this format:
+5. Limit the number of topics to a maximum of 4 and lessons under each topic to a maximum of 2.
+6. Use this format:
 {
   "course": "Course Name",
   "modules": [
