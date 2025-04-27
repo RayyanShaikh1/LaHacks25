@@ -7,7 +7,7 @@ const GroupUsersDropdown = ({ isOpen, onClose, group }) => {
   if (!isOpen || !group) return null;
 
   return (
-    <div className="absolute top-full left-0 mt-2 w-64 bg-neutral-800 rounded-lg shadow-lg border border-neutral-700 z-50">
+    <div className="absolute top-full left-0 w-64 bg-neutral-800 rounded-lg shadow-lg border border-neutral-700 z-50">
       <div className="p-3 border-b border-neutral-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users size={16} className="text-neutral-400" />
