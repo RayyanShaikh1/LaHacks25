@@ -166,7 +166,10 @@ export const getStudyChatHistory = async (req, res) => {
     const { groupId, topic } = req.query;
     const chat = await StudySessionChat.findOne({ groupId, topic })
       .populate('messages.sender', 'name');
-    res.json({ messages: chat ? chat.messages : [] });
+    res.json({ 
+      messages: chat ? chat.messages : [],
+      quiz: chat && chat.quiz ? chat.quiz : null
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch chat history" });
   }
@@ -349,5 +352,29 @@ export const initializeStudySessionAgent = async (req, res) => {
   } catch (error) {
     console.error("Error initializing study session agent:", error);
     res.status(500).json({ error: "Failed to initialize study session agent" });
+  }
+};
+
+export const saveQuizResponse = async (req, res) => {
+  try {
+    const { groupId, topic } = req.params;
+    const userId = req.user._id;
+    const { answers } = req.body;
+    if (!Array.isArray(answers)) {
+      return res.status(400).json({ error: "Answers must be an array" });
+    }
+    const chat = await StudySessionChat.findOne({ groupId, topic });
+    if (!chat || !chat.quiz) {
+      return res.status(404).json({ error: "Quiz not found for this topic" });
+    }
+    // Remove any previous response from this user
+    chat.quiz.responses = (chat.quiz.responses || []).filter(r => r.user.toString() !== userId.toString());
+    // Add new response
+    chat.quiz.responses.push({ user: userId, answers, completed: true });
+    await chat.save();
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error saving quiz response:", error);
+    res.status(500).json({ error: "Failed to save quiz response" });
   }
 }; 

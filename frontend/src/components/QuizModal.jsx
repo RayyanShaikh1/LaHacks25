@@ -1,15 +1,43 @@
 import { useState, useEffect } from "react";
 import { X, ChevronRight, Check, XCircle } from "lucide-react";
+import { axiosInstance } from "../lib/axios";
 
-const QuizModal = ({ quiz, onClose }) => {
+const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizCompleted }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState([]);
-  const [showResults, setShowResults] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState(initialAnswers || []);
+  const [showResults, setShowResults] = useState(!!initialAnswers);
   const [score, setScore] = useState(0);
+  const isReviewMode = Array.isArray(initialAnswers);
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
 
+  useEffect(() => {
+    if (showResults && groupId && topic && !isReviewMode) {
+      // Send the student's answers to the backend
+      axiosInstance.post(`/study-session/chat/${groupId}/${encodeURIComponent(topic)}/quiz-response`, {
+        answers: selectedAnswers
+      }).then(() => {
+        if (onQuizCompleted) onQuizCompleted(selectedAnswers);
+      }).catch((err) => {
+        // Optionally handle error
+        console.error("Failed to save quiz results", err);
+      });
+    }
+  }, [showResults, groupId, topic, selectedAnswers, isReviewMode, onQuizCompleted]);
+
+  useEffect(() => {
+    if (isReviewMode) {
+      // Calculate score for review mode
+      const correctAnswers = quiz.questions.reduce((acc, question, index) => {
+        return acc + (initialAnswers[index] === question.correct ? 1 : 0);
+      }, 0);
+      setScore(correctAnswers);
+      setShowResults(true);
+    }
+  }, [isReviewMode, initialAnswers, quiz.questions]);
+
   const handleAnswerSelect = (optionIndex) => {
+    if (isReviewMode) return;
     const newAnswers = [...selectedAnswers];
     newAnswers[currentQuestionIndex] = optionIndex;
     setSelectedAnswers(newAnswers);
@@ -26,13 +54,6 @@ const QuizModal = ({ quiz, onClose }) => {
       setScore(correctAnswers);
       setShowResults(true);
     }
-  };
-
-  const handleRetake = () => {
-    setCurrentQuestionIndex(0);
-    setSelectedAnswers([]);
-    setShowResults(false);
-    setScore(0);
   };
 
   if (!quiz) return null;
@@ -79,6 +100,7 @@ const QuizModal = ({ quiz, onClose }) => {
                         ? "bg-blue-600 text-white"
                         : "bg-neutral-700 text-neutral-200 hover:bg-neutral-600"
                     }`}
+                    disabled={isReviewMode}
                   >
                     {option}
                   </button>
@@ -88,7 +110,7 @@ const QuizModal = ({ quiz, onClose }) => {
               {/* Next button */}
               <button
                 onClick={handleNext}
-                disabled={selectedAnswers[currentQuestionIndex] === undefined}
+                disabled={selectedAnswers[currentQuestionIndex] === undefined || isReviewMode}
                 className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold 
                          hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
                          flex items-center justify-center gap-2"
@@ -136,15 +158,6 @@ const QuizModal = ({ quiz, onClose }) => {
                   </div>
                 ))}
               </div>
-
-              {/* Retake button */}
-              <button
-                onClick={handleRetake}
-                className="w-full bg-neutral-700 text-white py-3 rounded-lg font-semibold 
-                         hover:bg-neutral-600 transition-colors"
-              >
-                Retake Quiz
-              </button>
             </div>
           )}
         </div>
