@@ -71,9 +71,9 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-neutral-800 rounded-lg w-full max-w-2xl mx-4 overflow-hidden">
+      <div className="bg-neutral-800 rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-neutral-700">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-700 shrink-0">
           <h3 className="text-lg font-semibold text-neutral-200">
             {isReviewMode ? "Quiz Review" : "Quiz"}
           </h3>
@@ -86,7 +86,7 @@ const QuizModal = ({ quiz, onClose, groupId, topic, initialAnswers, onQuizComple
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto flex-1">
           {!showResults ? (
             <>
               {/* Progress bar */}
