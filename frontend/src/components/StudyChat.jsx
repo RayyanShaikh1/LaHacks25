@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { axiosInstance } from "../lib/axios";
-import { X, BookOpen, Eye, Loader2, AlertCircle } from "lucide-react";
+import { X, BookOpen, Eye, Loader2 } from "lucide-react";
 import MarkdownMessage from "./MarkdownMessage";
 import QuizModal from "./QuizModal";
 
@@ -18,29 +18,6 @@ const StudyChat = ({ topic, groupId, onClose }) => {
   const [isSending, setIsSending] = useState(false);
   const [isNexusThinking, setIsNexusThinking] = useState(false);
   const [lastMessageWasForNexus, setLastMessageWasForNexus] = useState(false);
-  const [error, setError] = useState(null);
-  const errorTimeoutRef = useRef(null);
-
-  // Clear error after a short time
-  useEffect(() => {
-    if (error) {
-      // Clear any existing timeout
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
-      }
-      
-      // Set a new timeout to clear the error after 3 seconds
-      errorTimeoutRef.current = setTimeout(() => {
-        setError(null);
-      }, 3000);
-    }
-    
-    return () => {
-      if (errorTimeoutRef.current) {
-        clearTimeout(errorTimeoutRef.current);
-      }
-    };
-  }, [error]);
 
   // Scroll to bottom helper function
   const scrollToBottom = (behavior = 'smooth') => {
@@ -209,8 +186,11 @@ const StudyChat = ({ topic, groupId, onClose }) => {
       console.error("Error sending message:", error);
       // Remove the temporary message if there was an error
       setMessages(prev => prev.filter(msg => msg._id !== tempMessage._id));
-      // Set error message instead of adding to chat
-      setError("Sorry, there was an error processing your message.");
+      // Add error message
+      setMessages(prev => [...prev, { 
+        role: "system", 
+        content: "Sorry, there was an error processing your message." 
+      }]);
     } finally {
       setIsSending(false);
       // We'll set isNexusThinking to false when we receive the response via socket
@@ -343,22 +323,6 @@ const StudyChat = ({ topic, groupId, onClose }) => {
         </div>
       </div>
       
-      {/* Error Message */}
-      {error && (
-        <div 
-          className="bg-red-900/80 text-white px-4 py-2 flex items-center justify-between cursor-pointer"
-          onClick={() => setError(null)}
-        >
-          <div className="flex items-center gap-2">
-            <AlertCircle size={16} />
-            <span>{error}</span>
-          </div>
-          <button onClick={() => setError(null)}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
-      
       {/* Messages */}
       <div 
         ref={chatContainerRef}
@@ -369,24 +333,36 @@ const StudyChat = ({ topic, groupId, onClose }) => {
             key={groupIndex}
             className="hover:bg-neutral-800/50 px-4 py-2 rounded-lg transition-colors"
           >
-            <div 
-              className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
-                msg.role === "user" 
-                  ? "bg-blue-600 text-white" 
-                  : msg.role === "system"
-                  ? "bg-red-600 text-white"
-                  : "bg-neutral-700 text-neutral-200"
-              }`}
-            >
-              {/* Show sender name if available and not assistant/system */}
-              {msg.role === "user" && msg.sender && msg.sender.name && (
-                <div className="text-xs font-semibold mb-1 text-blue-200">{msg.sender.name}</div>
-              )}
-              {msg.role === "assistant" && (
-                <div className="text-xs font-semibold mb-1 text-green-200">AI Assistant</div>
-              )}
-              <div className="text-sm sm:text-base">
-                <MarkdownMessage content={msg.content} />
+            <div className="flex items-start gap-3 w-full">
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mt-0.5 border border-neutral-600">
+                <img
+                  src={group.sender.profilePic || "/avatar.png"}
+                  alt={group.sender.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 min-w-0">
+                {/* Sender name */}
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium text-neutral-200">
+                    {group.sender.name}
+                  </span>
+                </div>
+
+                {/* Message content */}
+                <div className="space-y-1">
+                  {group.messages.map((message, messageIndex) => (
+                    <div
+                      key={messageIndex}
+                      className="text-neutral-200"
+                    >
+                      <MarkdownMessage content={message.content} />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
