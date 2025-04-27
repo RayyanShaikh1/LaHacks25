@@ -18,8 +18,8 @@ const isOverlapping = (x, y, nodeSize, existingNodes, minDistance) => {
 };
 
 function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edges = [], depth = 0) {
-  const SPACING = 50; // Minimum space between nodes
-  const moduleRadius = 600; // Increased base radius for more space
+  const SPACING = 40; // Reduced minimum space between nodes
+  const moduleRadius = 400; // Reduced base radius for closer nodes
   
   // Course node (unchanged)
   const courseId = "root";
@@ -42,7 +42,7 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       justifyContent: 'center',
       textAlign: 'center',
       fontWeight: 600,
-      fontSize: 20,
+      fontSize: 24, // Increased font size
       border: '2px solid rgba(139, 92, 246, 0.5)',
       boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
     },
@@ -58,11 +58,11 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
     // Try to find a position without overlap
     do {
       const angle = (i * 2 * Math.PI / courseData.modules.length) + (Math.random() * 0.5 - 0.25);
-      const radius = moduleRadius + (Math.random() * 300);
+      const radius = moduleRadius + (Math.random() * 200); // Reduced random radius
       moduleX = x + radius * Math.cos(angle);
       moduleY = y + radius * Math.sin(angle);
       attempts++;
-    } while (isOverlapping(moduleX, moduleY, 160, nodes, SPACING) && attempts < maxAttempts);
+    } while (isOverlapping(moduleX, moduleY, 180, nodes, SPACING) && attempts < maxAttempts);
 
     nodes.push({
       id: moduleId,
@@ -76,14 +76,14 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
         color: 'white',
         borderRadius: '40%',
         padding: 8,
-        width: 160,
-        height: 160,
+        width: 180, // Increased width
+        height: 180, // Increased height
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
         fontWeight: 500,
-        fontSize: 16,
+        fontSize: 20, // Increased font size
         border: '2px solid rgba(139, 92, 246, 0.3)',
         boxShadow: '0 0 15px rgba(139, 92, 246, 0.2)',
       },
@@ -113,11 +113,11 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
       do {
         const baseAngle = Math.atan2(moduleY - y, moduleX - x);
         const spreadAngle = baseAngle + (Math.random() * Math.PI/2 - Math.PI/4);
-        const lessonRadius = 300 + (Math.random() * 200);
+        const lessonRadius = 200 + (Math.random() * 150); // Reduced radius
         lessonX = moduleX + lessonRadius * Math.cos(spreadAngle);
         lessonY = moduleY + lessonRadius * Math.sin(spreadAngle);
         lessonAttempts++;
-      } while (isOverlapping(lessonX, lessonY, 120, nodes, SPACING) && lessonAttempts < maxAttempts);
+      } while (isOverlapping(lessonX, lessonY, 140, nodes, SPACING) && lessonAttempts < maxAttempts);
 
       nodes.push({
         id: lessonId,
@@ -131,14 +131,14 @@ function buildTreeNodesEdges(courseData, x, y, parentId = null, nodes = [], edge
           color: 'white',
           borderRadius: '30%',
           padding: 6,
-          width: 120,
-          height: 120,
+          width: 140, // Increased width
+          height: 140, // Increased height
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
           fontWeight: 400,
-          fontSize: 14,
+          fontSize: 16, // Increased font size
           border: '2px solid rgba(139, 92, 246, 0.2)',
           boxShadow: '0 0 10px rgba(139, 92, 246, 0.1)',
         },
